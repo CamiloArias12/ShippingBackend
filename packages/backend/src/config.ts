@@ -7,7 +7,6 @@ dotenv.config({
 });
 
 export const config = {
-  // Environment
   env: process.env.NODE_ENV || 'development',
   isProd: process.env.NODE_ENV === 'production',
   port: Number(process.env.PORT) || 8000,
@@ -16,7 +15,6 @@ export const config = {
     origin: process.env.CORS_ORIGIN || '*',
   },
 
-  // Database Configuration
   db: {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.DB_PORT) || 3306,
@@ -25,7 +23,6 @@ export const config = {
     name: process.env.DB_NAME || 'shipping_db',
   },
 
-  // Redis Configuration
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: Number(process.env.REDIS_PORT) || 6379,
@@ -34,29 +31,16 @@ export const config = {
     ttl: Number(process.env.REDIS_TTL) || 3600,
   },
 
-  // JWT Configuration
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_key_here',
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'your_refresh_token_secret_here',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
-
-  // Email Configuration
   email: {
     user: process.env.EMAIL_AUTH_USER || 'your_email@example.com',
     password: process.env.EMAIL_AUTH_PASS || 'your_email_password',
   },
-
-  // Slack Integration
-  slack: {
-    webhook: process.env.SLACK_WEBHOOK || 'webhook_url',
-  },
-
-  // Security
-  secretKey: process.env.SECRET_KEY || 'your_app_secret_key',
-
-  // SMTP Configuration
   smtp: {
     host: process.env.MAIL_HOST || 'smtp.example.com',
     port: Number(process.env.MAIL_PORT) || 587,
@@ -68,20 +52,10 @@ export const config = {
     },
     from: process.env.MAIL_FROM_NAME || 'Shipping App',
   },
-
-  // Logging
   logLevel: process.env.LOG_LEVEL || 'info',
   logFilePath: process.env.LOG_FILE_PATH || 'logs/app.log',
-
-  // Rate Limiting
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW) * 60 * 1000 || 15 * 60 * 1000, // default 15 minutes
     max: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  },
-
-  // Admin Default Credentials (for seeding)
-  admin: {
-    email: process.env.ADMIN_EMAIL || 'admin@admin.com',
-    password: process.env.ADMIN_PASSWORD || 'admin123',
   },
 };
