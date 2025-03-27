@@ -47,8 +47,6 @@ export class InitialMigration1711477200000 implements MigrationInterface {
                 }
             ]
         }), true);
-
-        // Add email index
         await queryRunner.createIndex("user", new TableIndex({
             name: "idx_users_email",
             columnNames: ["email"]
@@ -57,8 +55,6 @@ export class InitialMigration1711477200000 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop tables in reverse order
-        await queryRunner.dropTable("orders");
         await queryRunner.dropTable("user");
     }
 }
