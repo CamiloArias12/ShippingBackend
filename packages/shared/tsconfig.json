@@ -1,14 +1,24 @@
 {
   "compilerOptions": {
-    "target": "es2021" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "experimentalDecorators": true /* Enable experimental support for TC39 stage 2 draft decorators. */,
-    "module": "commonjs" /* Specify what module code is generated. */,
-    "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
-    "outDir": "./dist" /* Specify an output folder for all emitted files. */,
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "strict": true /* Enable all strict type-checking options. */,
-    "strictPropertyInitialization": false /* Check for class properties that are declared but not set in the constructor. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
-  }
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2018",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@shipping/shared/*": ["../shared/dist/*"]
+    },
+  },
 }

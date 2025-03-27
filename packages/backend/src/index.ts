@@ -17,7 +17,6 @@ import dotenv from "dotenv";
     app.use(cors());
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(fileUpload({ createParentPath: true }));
 
     app.get("/ping", (_req, res) => {
       res.send("pong");
