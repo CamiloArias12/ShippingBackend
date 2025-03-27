@@ -1,0 +1,2 @@
+# All the bash script files must be end with lf
+*.sh text eol=lf

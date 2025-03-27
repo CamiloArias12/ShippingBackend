@@ -1,0 +1,56 @@
+# Deploy files
+deploy.dev.sh
+deploy.prod.sh
+
+# docker ignore
+.docker-volume
+
+# zip files
+packages/api/dist.zip
+packages/shared/dist.zip
+packages/web/dist.zip
+
+firebase-credentials.json
+.env.prod
+.env.dev
+# yarn
+.yarn
+
+# Ignore keys
+*/Keys.ts
+.env
+
+# Turborepo
+.turbo
+
+#vercel
+.vercel
+
+# SSL
+fullchain.pem
+privkey.pem
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

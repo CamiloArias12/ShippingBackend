@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "name": "shipping",
+  "type": "module",
+  "version": "0.0.3",
+  "scripts": {
+    "deploy:clean": "rimraf packages/api/dist.zip packages/shared/dist.zip packages/web/dist.zip",
+    "deploy": "bash deploy.sh",
+    "start": "bash startup.sh"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1"
+  },
+  "packageManager": "yarn@3.6.3"
+}

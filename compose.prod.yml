@@ -1,0 +1,33 @@
+services:
+  shippingd:
+    container_name: shippingd
+    build: ./
+    restart: always
+    volumes:
+      - "${PROJECT_PWD}./:/app"
+      - /app/node_modules
+      - /app/packages/api/node_modules
+      - /app/packages/shared/node_modules
+    env_file:
+      - .env
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    networks:
+      - shippingnet
+      
+  shippingr:
+    container_name: shippingr
+    image: redis:latest
+    restart: always
+    command: "--port ${REDIS_PORT}"
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - "${PROJECT_PWD}.docker-volume/redis/data:/data"
+      - "${PROJECT_PWD}.docker-volume/redis/conf:/usr/local/etc/redis/redis.conf"
+    networks:
+      - shippingnet
+
+networks:
+  shippingnet:
+    name: shippingnet

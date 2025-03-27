@@ -1,0 +1,6 @@
+{
+    "verbose": true,
+    "watch": ["./src", "index.ts"],
+    "exec": "yarn build && yarn start",
+    "ext": "ts"
+}
