@@ -2,7 +2,7 @@ import * as nodemailer from 'nodemailer';
 import * as handlebars from 'handlebars';
 import * as path from 'path';
 import * as fs from 'fs';
-import { config } from 'src/config';
+import { config } from '../../config';
 
 export type SMTPConfig = {
     host: string;
@@ -30,8 +30,6 @@ export class MailerService {
         if (!config) {
             throw new Error(`SMTP configuration "${configKey}" not found.`);
         }
-        console.log('Creating transporter with config:',
-            config);
         return nodemailer.createTransport({
             host: config.host,
             port: config.port,
@@ -46,20 +44,19 @@ export class MailerService {
     }
 
     async sendMail(
-        configKey: string,
         to: string,
         subject: string,
         html: string,
         attachments?: Array<{ filename: string; path: string }>
     ) {
-            const transporter = this.createTransporter(configKey);            
-           const data= await transporter.sendMail({
-                to: to,
-                subject: subject,
-                html: html,
-                attachments: attachments
-            });
-            transporter.close();       
+        const transporter = this.createTransporter("default");
+        await transporter.sendMail({
+            to: to,
+            subject: subject,
+            html: html,
+            attachments: attachments
+        });
+        transporter.close();
     }
 
     private loadTemplate(templateName: string): handlebars.TemplateDelegate {
@@ -69,11 +66,17 @@ export class MailerService {
         return handlebars.compile(templateSource);
     }
 
-    public getTemplate(templateName: string,values?:any): string {
+    private getTemplate(templateName: string, values?: any): string {
         if (!templateName) {
             throw new Error(`Template "${templateName}" not found.`);
         }
         const template = this.loadTemplate(`${templateName}.hbs`);
         return template(values);
     }
+
+    public async sendWelcomeEmail(to: string, name: string) {
+        const subject = 'Welcome to our service!';
+        const html = this.getTemplate('welcome', { name });
+    }
+
 }

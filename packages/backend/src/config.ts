@@ -17,10 +17,10 @@ export const config = {
 
   db: {
     host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'shipping_user',
+    port: Number(process.env.MYSQL_PORT) || 3306,
+    user: process.env.DB_USERNAME || 'shipping_user',
     password: process.env.DB_PASSWORD || 'shipping_password',
-    name: process.env.DB_NAME || 'shipping_db',
+    name: process.env.DB_DATABASE || 'shipping_db',
   },
 
   redis: {

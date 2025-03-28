@@ -1,6 +1,6 @@
 {
   "verbose": true,
-  "watch": ["./packages/api/src", "./packages/shared/src", ".env"],
+  "watch": ["./packages/backend/src", "./packages/shared/src", ".env"],
   "exec": "bash dev.sh",
   "ext": "ts, tsx, env"
 }

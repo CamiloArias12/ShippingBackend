@@ -39,6 +39,7 @@ if (require.main === module) {
       process.exit(0);
     })
     .catch((error) => {
+      console.log("Error setting up database:", error);
       process.exit(1);
     });
 }

@@ -9,8 +9,8 @@ export class UserRepository {
     }
 
     async create(user: User): Promise<User> {
-        const query = 'INSERT INTO user (email, password, role, created_at, deleted_at) VALUES (?, ?, ?, ?, ?)';
-        const values = [user.email, user.password, user.role || 'user', user.created_at, user.deleted_at || null];
+        const query = 'INSERT INTO user (name,email, password, role, created_at) VALUES (?, ?, ?, ?, ?)';
+        const values = [user.name,user.email, user.password, user.role || 'user', user.created_at];
         const [result] = await this.connection.execute<mysql.ResultSetHeader>(query, values);
         const insertedId = result.insertId;
         return { ...user, id: insertedId };

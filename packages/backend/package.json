@@ -9,6 +9,7 @@
     "start": "node dist/index.js",
     "test": "jest",
     "dev": "nodemon",
+    "migrate":"ts-node src/database/setup.ts migrate",
     "lint": "yarn run lint:js",
     "lint:js": "eslint index.js 'src/*' 'src/**/*' --cache"
   },

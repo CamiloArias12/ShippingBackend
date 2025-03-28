@@ -4,7 +4,7 @@ services:
     build: .
     restart: always
     volumes:
-      - "${PROJECT_PWD}./:/app"
+      - "./:/app"
       - /app/node_modules
       - /app/packages/backend/node_modules
       - /app/packages/shared/node_modules
@@ -32,8 +32,6 @@ services:
       test: [ 'CMD', 'mysqladmin', '-u${DB_USERNAME}', '-p${DB_PASSWORD}', 'ping' ]
       retries: 3
       timeout: 5s
-    volumes:
-      - "${PROJECT_PWD}.docker-volume/db:/var/lib/mysql"
     networks:
       - shippingnet
 
@@ -45,8 +43,8 @@ services:
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
     volumes:
-      - "${PROJECT_PWD}.docker-volume/redis/data:/data"
-      - "${PROJECT_PWD}.docker-volume/redis/conf:/usr/local/etc/redis/redis.conf"
+      - "./docker-volume/redis/data:/data"
+      - "./docker-volume/redis/conf:/usr/local/etc/redis/redis.conf"
     networks:
       - shippingnet
 

@@ -10,8 +10,8 @@ import { UserService } from "./services/UserService";
 import { MailerService } from "./infratructure/email/email";
 import { JwtService } from "./utils/Jwt";
 import { UserController } from "./api/v1/controllers/UserController";
-import { UserRoutes } from "./api/v1/routes/user.routes";
-import { AuthMiddleware } from "./api/middlewares/authMiddleware";
+import { UserRoutes } from "./api/v1/routes/UserRoutes";
+import { AuthMiddleware } from "./api/middlewares/AuthMiddleware";
 
 (async () => {
   dotenv.config();
@@ -22,13 +22,16 @@ import { AuthMiddleware } from "./api/middlewares/authMiddleware";
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
-
+    app.get("/ping", (_req, res) => {
+      console.log("ping");
+      res.send("pong");
+    });
     const db = mysql.createPool({
       host: config.db.host || "localhost",
       port: config.db.port || 3306,
-      database: config.db.name || "task_manager",
-      user: config.db.user || "task_user",
-      password: config.db.password || "taskPass456",
+      database: config.db.name || "shipping_db",
+      user: config.db.user || "shipping_user",
+      password: config.db.password || "shipping_password",
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
@@ -43,6 +46,11 @@ import { AuthMiddleware } from "./api/middlewares/authMiddleware";
     const userController = new UserController(userService);
     new UserRoutes(app, middeware, userController);
 
+    const port = process.env.PORT || 8000;
+    app.listen(port, () => {
+      console.log("Server Run Port : " + port);
+    });
   } catch (error) {
+    console.error("Error starting server:", error);
   }
 })();

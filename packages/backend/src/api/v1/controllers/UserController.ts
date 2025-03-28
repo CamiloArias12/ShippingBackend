@@ -13,6 +13,7 @@ export class UserController {
             const user = await this.userService.create(req.body);
             res.status(201).json(user);
         } catch (error) {
+            console.error('Error registering user:', error);
             res.status(500).json({ error: 'Failed to register user' });
         }
     }
