@@ -2,16 +2,20 @@ import "reflect-metadata";  // This import must be first!
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import dotenv from "dotenv";
+import * as dotenv from 'dotenv';
 import mysql from "mysql2/promise";
 import { UserRepository } from "./repositories/UserRepository";
 import { config } from "./config";
 import { UserService } from "./services/UserService";
-import { MailerService } from "./infratructure/email/email";
+import { MailerService } from "./infrastructure/email/email";
 import { JwtService } from "./utils/Jwt";
 import { UserController } from "./api/v1/controllers/UserController";
 import { UserRoutes } from "./api/v1/routes/UserRoutes";
 import { AuthMiddleware } from "./api/middlewares/AuthMiddleware";
+import { ShipmentRoutes } from "./api/v1/routes/ShipmentRoutes";
+import { ShipmentController } from "./api/v1/controllers/ShipmentController";
+import { ShipmentService } from "./services/ShipmentService";
+import { ShipmentRepository } from "./repositories/ShipmentRepository";
 
 (async () => {
   dotenv.config();
@@ -45,6 +49,13 @@ import { AuthMiddleware } from "./api/middlewares/AuthMiddleware";
     const userService = new UserService(jwtService, userRepository, mailerService);
     const userController = new UserController(userService);
     new UserRoutes(app, middeware, userController);
+
+    const shipmentRepository = new ShipmentRepository(connection);
+    const shipmentService = new ShipmentService(shipmentRepository, mailerService);
+    const shipmentController = new ShipmentController(shipmentService);
+    new ShipmentRoutes(app, middeware, shipmentController);
+
+
 
     const port = process.env.PORT || 8000;
     app.listen(port, () => {

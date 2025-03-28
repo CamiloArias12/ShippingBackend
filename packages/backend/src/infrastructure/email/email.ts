@@ -30,6 +30,7 @@ export class MailerService {
         if (!config) {
             throw new Error(`SMTP configuration "${configKey}" not found.`);
         }
+
         return nodemailer.createTransport({
             host: config.host,
             port: config.port,
@@ -49,18 +50,19 @@ export class MailerService {
         html: string,
         attachments?: Array<{ filename: string; path: string }>
     ) {
+        
         const transporter = this.createTransporter("default");
-        await transporter.sendMail({
+        const data=await transporter.sendMail({
             to: to,
             subject: subject,
             html: html,
             attachments: attachments
         });
-        transporter.close();
+
     }
 
     private loadTemplate(templateName: string): handlebars.TemplateDelegate {
-        const templatesFolderPath = path.join(__dirname, '../../../../src/services/templates');
+        const templatesFolderPath = path.join(__dirname, '../../../src/infrastructure/email/templates');
         const templatePath = path.join(templatesFolderPath, templateName);
         const templateSource = fs.readFileSync(templatePath, 'utf8');
         return handlebars.compile(templateSource);
@@ -75,8 +77,8 @@ export class MailerService {
     }
 
     public async sendWelcomeEmail(to: string, name: string) {
-        const subject = 'Welcome to our service!';
-        const html = this.getTemplate('welcome', { name });
+        const html = this.getTemplate('welcome', { name: name });
+        this.sendMail(to, 'Bienvenido a Coordinadora', html,null)
     }
 
 }

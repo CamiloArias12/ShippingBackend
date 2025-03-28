@@ -17,6 +17,6 @@ prod|dev)
     ;;
 *)
     echo "------------ DEVELOPMENT MODE ------------"
-    yarn workspace @shipping/backend dev
+    yarn dev
     ;;
 esac

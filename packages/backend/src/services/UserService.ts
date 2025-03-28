@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import { User } from '../domain/entities/User';
-import { UserRepository } from 'src/repositories/UserRepository';
+import { UserRepository } from '../repositories/UserRepository';
 import { JwtService } from '../utils/Jwt';
-import { MailerService } from 'src/infratructure/email/email';
+import { MailerService } from '../infrastructure/email/email';
 
 export class UserService {
     private userRepository: UserRepository;
@@ -23,6 +23,8 @@ export class UserService {
             created_at: new Date(),
         });
         if (!result) return null;
+        
+        this.mailerService.sendWelcomeEmail(user.email, user.name);
         return this.login(user.email, user.password)
     }
 

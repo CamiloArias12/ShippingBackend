@@ -44,7 +44,7 @@ export const config = {
   smtp: {
     host: process.env.MAIL_HOST || 'smtp.example.com',
     port: Number(process.env.MAIL_PORT) || 587,
-    secure: process.env.MAIL_SECURE === 'true',
+    secure: process.env.MAIL_SECURE === 'true' || true,
     name: process.env.MAIL_NAME || 'Shipping App',
     auth: {
       user: process.env.MAIL_USERNAME || 'your_email@example.com',

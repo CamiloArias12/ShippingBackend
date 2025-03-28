@@ -1,5 +1,5 @@
 import mysql from 'mysql2/promise';
-import { User } from 'src/domain/entities/User';
+import { User } from '../domain/entities/User';
 
 export class UserRepository {
     private connection: mysql.Connection;

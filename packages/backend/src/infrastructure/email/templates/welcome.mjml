@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-include path="./header.mjml" />
+    <mj-section>
+      <mj-column>
+        <mj-text>Bienvenido(a) {{name}}</mj-text>
+        <mj-text>Estamos emocionados de tenerte con nosotros. Esperamos que disfrutes de nuestros servicios</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-include path="./footer.mjml" />
+  </mj-body>
+</mjml>
