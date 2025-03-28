@@ -6,7 +6,8 @@
   "scripts": {
     "deploy:clean": "rimraf packages/api/dist.zip packages/shared/dist.zip packages/web/dist.zip",
     "deploy": "bash deploy.sh",
-    "start": "bash startup.sh"
+    "start": "bash startup.sh",
+    "dev": "nodemon"
   },
   "workspaces": {
     "packages": [
