@@ -1,8 +1,4 @@
-export enum DriverStatus {
-  AVAILABLE = 'available',
-  BUSY = 'busy',
-  OFFLINE = 'offline'
-}
+import { DriverStatus } from '@shipping/shared/enums';
 
 export type Driver = {
   id?: number;

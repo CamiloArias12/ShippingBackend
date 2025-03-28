@@ -1,5 +1,7 @@
 import mysql from 'mysql2/promise';
-import { Shipment, ShipmentStatus } from '../domain/entities/Shipment';
+import { Shipment } from '../domain/entities/Shipment';
+import { ShipmentStatus } from '@shipping/shared/dist/enums';
+
 
 export class ShipmentRepository {
     private connection: mysql.Connection;

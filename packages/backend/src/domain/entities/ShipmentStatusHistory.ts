@@ -1,4 +1,4 @@
-import { ShipmentStatus } from './Shipment';
+import { ShipmentStatus } from '@shipping/shared/enums';
 
 export type ShipmentStatusHistory = {
   id?: number;

@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-import { AuthLoginReq } from '@shipping/shared/dist/auth';
-import { UserReq } from '@shipping/shared/dist/user/user';
 import { DriverService } from 'src/services/DriverService';
 
 

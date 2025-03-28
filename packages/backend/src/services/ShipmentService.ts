@@ -1,8 +1,10 @@
 import mysql from 'mysql2/promise';
-import { Shipment, ShipmentStatus } from '../domain/entities/Shipment';
+import { Shipment } from '../domain/entities/Shipment';
 import { ShipmentRepository } from '../repositories/ShipmentRepository';
 import { MailerService } from '../infrastructure/email/email';
 import { ShipmentStatusHistoryRepository } from '../repositories/ShipmentStatusHistoryRepository';
+import { ShipmentStatus } from '@shipping/shared/enums';
+import { AssignShipmentDto, ShipmentUpdateStatusDto } from '@shipping/shared/shipment';
 
 export class ShipmentService {
     private shipmentRepository: ShipmentRepository;
@@ -33,25 +35,24 @@ export class ShipmentService {
         return newShipment;
     }
 
-    async updateStatus(id: number, status: ShipmentStatus, userId?: number): Promise<void> {
-        const currentShipment = await this.shipmentRepository.findById(id);
+    async updateStatus(upateStatusDto:ShipmentUpdateStatusDto): Promise<void> {
+        const currentShipment = await this.shipmentRepository.findById(upateStatusDto.id);
         if (!currentShipment) {
             throw new Error('Shipment not found');
         }
-        console.log('Current shipment:', currentShipment);
-        await this.shipmentRepository.updateStatus(id, status);
+        await this.shipmentRepository.updateStatus(upateStatusDto.id, upateStatusDto.status);
         
         await this.shipmentStatusHistoryRepository.create({
-            shipment_id: id,
+            shipment_id: upateStatusDto.id,
             previous_status: currentShipment.status,
-            new_status: status,
-            changed_by_user_id: userId,
+            new_status: upateStatusDto.status,
+            changed_by_user_id: upateStatusDto.userId,
             created_at: new Date(),
         });
     }
 
-    async assignDriverAndRoute(id: number, driverId: number, routeId: number): Promise<void> {
-        await this.shipmentRepository.assignDriverAndRoute(id, driverId, routeId);
+    async assignDriverAndRoute(assignDto:AssignShipmentDto): Promise<void> {
+        await this.shipmentRepository.assignDriverAndRoute(assignDto.id, assignDto.driverId, assignDto.routeId);
     }
 
     async find(id: number): Promise<Shipment | null> {

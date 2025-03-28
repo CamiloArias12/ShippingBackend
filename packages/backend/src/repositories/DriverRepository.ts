@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
-import { Driver, DriverStatus } from '../domain/entities/Driver';
+import { Driver } from '../domain/entities/Driver';
+import { DriverStatus } from '@shipping/shared/enums';
 
 export class DriverRepository {
   private connection: mysql.Connection;

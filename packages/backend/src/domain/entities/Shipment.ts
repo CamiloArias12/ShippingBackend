@@ -1,9 +1,4 @@
-export enum ShipmentStatus {
-    PENDING = "Pending",
-    IN_TRANSIT = "in_transit",
-    DELIVERED = "delivered",
-    CANCELLED = "Cancelled",
-}
+import { ShipmentStatus } from '@shipping/shared/enums';
 
 export type Shipment = {
     id?: number;

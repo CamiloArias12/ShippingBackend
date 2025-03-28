@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthLoginReq } from '@shipping/shared/dist/auth';
-import { UserReq } from '@shipping/shared/dist/user/user';
+import { UserCreateReq } from '@shipping/shared/dist/user/index';
 import { UserService } from 'src/services/UserService';
 
 
@@ -11,14 +11,14 @@ export class UserController {
         this.userService = userService;
     }
     async register(req: Request, res: Response): Promise<void> {
-        const validation = UserReq.safeParse(req.body);
+        const validation = UserCreateReq.safeParse(req.body);
         if (!validation.success) {
             res.status(400).json({ error: 'Invalid fields', validation });
             return;
         }
 
         try {
-            const user = await this.userService.create(req.body);
+            const user = await this.userService.create(validation.data);
             res.status(201).json(user);
         } catch (error) {
             console.error('Error registering user:', error);

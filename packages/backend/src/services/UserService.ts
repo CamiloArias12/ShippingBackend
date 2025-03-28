@@ -3,6 +3,7 @@ import { User } from '../domain/entities/User';
 import { UserRepository } from '../repositories/UserRepository';
 import { JwtService } from '../utils/Jwt';
 import { MailerService } from '../infrastructure/email/email';
+import { UserCreateDto } from '@shipping/shared/user';
 
 export class UserService {
     private userRepository: UserRepository;
@@ -15,7 +16,7 @@ export class UserService {
         this.mailerService = mailerService;
     }
 
-    async create(user: User): Promise<{ token: string } | null> {
+    async create(user: UserCreateDto): Promise<{ token: string } | null> {
         const hashedPassword = await bcrypt.hash(user.password, 10);
         const result: User = await this.userRepository.create({
             ...user,
@@ -23,7 +24,7 @@ export class UserService {
             created_at: new Date(),
         });
         if (!result) return null;
-        
+
         this.mailerService.sendWelcomeEmail(user.email, user.name);
         return this.login(user.email, user.password)
     }

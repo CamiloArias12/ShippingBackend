@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { ShipmentService } from '../../../services/ShipmentService';
+import { ShipmentCreateReq,ShipmentUpdateStatusReq,AssignShipmentReq } from '@shipping/shared/dist/shipment/index';
+
 
 export class ShipmentController {
     private shipmentService: ShipmentService;
@@ -10,20 +12,20 @@ export class ShipmentController {
 
     async create(req: Request, res: Response): Promise<void> {
 
-        /*
-        const validation = ShipmentReq.safeParse(req.body);
+        
+        const validation =ShipmentCreateReq.safeParse(req.body);
         if (!validation.success) {
           res.status(400).json({ error: 'Invalid data', validation });
           return;
         }
-        */
+        
         const user = req.user;
         if (!user) {
             res.status(403).json({ error: 'Unauthorized' });
             return;
         }
         try {
-            const result = await this.shipmentService.create({ user_id: user.id, ...req.body });
+            const result = await this.shipmentService.create({ user_id: user.id, ...validation.data });
             res.status(201).json(result);
         } catch (error) {
             console.error('Error creating shipment:', error);
@@ -32,9 +34,14 @@ export class ShipmentController {
     }
 
     async updateStatus(req: Request, res: Response): Promise<void> {
-        const { id, status } = req.body;
+        const validation = ShipmentUpdateStatusReq.safeParse(req.body);
+        if (!validation.success) {
+            res.status(400).json({ error: 'Invalid data', validation });
+            return;
+        }
+
         try {
-            await this.shipmentService.updateStatus(Number(id), status, req.user?.id);
+            await this.shipmentService.updateStatus({...validation.data, userId: req.user?.id });
             res.status(200).json({ message: 'Status updated' });
         } catch (error) {
             console.error('Error updating shipment status:', error);
@@ -43,10 +50,13 @@ export class ShipmentController {
     }
 
     async assignDriverAndRoute(req: Request, res: Response): Promise<void> {
-        const { id, driverId, routeId } = req.body;
-
+        const  validation =AssignShipmentReq.safeParse(req.body);
+        if (!validation.success) {
+            res.status(400).json({ error: 'Invalid data', validation });
+            return;
+        }
         try {
-            await this.shipmentService.assignDriverAndRoute(Number(id), Number(driverId), Number(routeId));
+            await this.shipmentService.assignDriverAndRoute(validation.data);
             res.status(200).json({ message: 'Driver and route assigned' });
         } catch (error) {
             res.status(500).json({ error: 'Failed to assign driver and route' });
@@ -70,6 +80,10 @@ export class ShipmentController {
 
     async find(req: Request, res: Response): Promise<void> {
         const { id } = req.params;
+        if (!id) {
+            res.status(400).json({ error: 'Invalid shipment ID' });
+            return;
+        }
         try {
             const shipment = await this.shipmentService.find(Number(id));
             if (!shipment) {
