@@ -1,7 +1,8 @@
 {
-  "name": "backend",
+  "name": "@shipping/backend",
   "version": "1.0.0",
   "main": "index.js",
+  "private": true,
   "license": "MIT",
   "scripts": {
     "build:clean": "rimraf dist",
@@ -9,10 +10,12 @@
     "start": "node dist/index.js",
     "test": "jest",
     "dev": "nodemon",
+    "migrate": "ts-node src/database/setup.ts migrate",
     "lint": "yarn run lint:js",
     "lint:js": "eslint index.js 'src/*' 'src/**/*' --cache"
   },
   "dependencies": {
+    "@shipping/shared": "workspace:*",
     "@whiskeysockets/baileys": "^6.7.8",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",

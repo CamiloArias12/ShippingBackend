@@ -1,0 +1,16 @@
+<mjml>
+  <mj-body>
+    <mj-section background-color="#eeeeee">
+      <mj-column>
+        <mj-text>No responda a este correo electronico.</mj-text>
+        <mj-text>
+          Para ponerse en contacto con nosotros, haga click en
+          <a href="https://coordinadora.com/pqr/">Ayuda</a>
+        </mj-text>
+        <mj-text>
+          Copyright © 2025 Coordiandora. Todos los derechos reservados.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

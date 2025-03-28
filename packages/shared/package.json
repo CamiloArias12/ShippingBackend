@@ -1,5 +1,5 @@
 {
-  "name": "@gruserv/shared",
+  "name": "@shipping/shared",
   "private": true,
   "version": "0.0.1",
   "main": "dist/index.js",

@@ -4,10 +4,9 @@ services:
     build: .
     restart: always
     volumes:
-      - "${PROJECT_PWD}./:/app"
+      - "./:/app"
       - /app/node_modules
-      - /app/packages/api/node_modules
-      - /app/packages/web/node_modules
+      - /app/packages/backend/node_modules
       - /app/packages/shared/node_modules
     env_file:
       - .env
@@ -16,18 +15,6 @@ services:
       - '${API_PORT}:${API_PORT}'
     networks:
       - shippingnet
-
-  shippingw:
-    container_name: shippingw
-    image: nginx
-    ports:
-      - "${WEB_PORT}:80"
-    restart: always
-    volumes:
-      - "${PROJECT_PWD}./packages/web/dist:/usr/share/nginx/html"
-      - "${PROJECT_PWD}./packages/web/nginx/nginx.conf:/etc/nginx/nginx.conf"
-      - "${PROJECT_PWD}./packages/web/nginx/default.conf:/etc/nginx/conf.d/*.conf"
-
   shippingdb:
     container_name: shippingdb
     image: 'mysql'
@@ -45,8 +32,6 @@ services:
       test: [ 'CMD', 'mysqladmin', '-u${DB_USERNAME}', '-p${DB_PASSWORD}', 'ping' ]
       retries: 3
       timeout: 5s
-    volumes:
-      - "${PROJECT_PWD}.docker-volume/db:/var/lib/mysql"
     networks:
       - shippingnet
 
@@ -58,28 +43,10 @@ services:
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
     volumes:
-      - "${PROJECT_PWD}.docker-volume/redis/data:/data"
-      - "${PROJECT_PWD}.docker-volume/redis/conf:/usr/local/etc/redis/redis.conf"
+      - "./docker-volume/redis/data:/data"
+      - "./docker-volume/redis/conf:/usr/local/etc/redis/redis.conf"
     networks:
       - shippingnet
-
-  bull-monitor:
-    container_name: bull-monitor
-    image: tiagoboeing/bull-board:latest
-    restart: always
-    ports:
-      - "${BULL_MONITOR_PORT}:${BULL_MONITOR_PORT}"
-    environment:
-      QUEUE_PREFIX: 'bull'
-      QUEUE_NAMES: |
-        trip-notifications;
-        accept-notifications
-      REDIS_HOST: shippingr
-      REDIS_PORT: "${REDIS_PORT}"
-    networks:
-      - shippingnet
-    depends_on:
-      - shippingr
 
 networks:
   shippingnet:
