@@ -41,7 +41,6 @@ import { AuthMiddleware } from "./api/middlewares/authMiddleware";
     const userRepository = new UserRepository(connection);
     const userService = new UserService(jwtService, userRepository, mailerService);
     const userController = new UserController(userService);
-
     new UserRoutes(app, middeware, userController);
 
   } catch (error) {

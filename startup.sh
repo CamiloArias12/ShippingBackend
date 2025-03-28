@@ -13,8 +13,8 @@ prod|dev)
     # TODO: For CI/CD pipeline, uncomment the following lines
     yarn workspace @shipping/shared run build &&
     yarn workspace @shipping/web run build &&
-    yarn workspace @shipping/api run build &&
-    yarn workspace @shipping/api run start:prod
+    yarn workspace @shipping/backend run build &&
+    yarn workspace @shipping/backend run start:prod
     ;;
 *)
     echo "------------ DEVELOPMENT MODE ------------"
