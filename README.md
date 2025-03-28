@@ -43,11 +43,11 @@ create the entities in the database and populate the necessary entities. Follow 
 1. Run the migrations:
 
 ```bash
-docker compose exec app yarn workspace @shipping/api migrate:up
+docker compose exec app yarn workspace @shipping/backend migrate:up
 ```
 
 2. Run the seeder:
 
 ```bash
-docker compose exec app yarn workspace @shipping/api seed:up
+docker compose exec app yarn workspace @shipping/backend seed:up
 ```

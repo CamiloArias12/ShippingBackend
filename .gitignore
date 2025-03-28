@@ -4,6 +4,7 @@ deploy.prod.sh
 
 # docker ignore
 .docker-volume
+docker-volume
 
 # zip files
 packages/api/dist.zip
