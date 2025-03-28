@@ -16,10 +16,11 @@ import { ShipmentRoutes } from "./api/v1/routes/ShipmentRoutes";
 import { ShipmentController } from "./api/v1/controllers/ShipmentController";
 import { ShipmentService } from "./services/ShipmentService";
 import { ShipmentRepository } from "./repositories/ShipmentRepository";
+import { ShipmentStatusHistoryRepository } from "./repositories/ShipmentStatusHistoryRepository";
+import { RedisService } from './infrastructure/cache/redis';
 
 (async () => {
   dotenv.config();
-
   try {
     const app = express();
     app.use(cors());
@@ -51,12 +52,24 @@ import { ShipmentRepository } from "./repositories/ShipmentRepository";
     new UserRoutes(app, middeware, userController);
 
     const shipmentRepository = new ShipmentRepository(connection);
-    const shipmentService = new ShipmentService(shipmentRepository, mailerService);
+    const shipmentStatusHistoryRepository = new ShipmentStatusHistoryRepository(connection);
+    const shipmentService = new ShipmentService(
+      shipmentRepository, 
+      mailerService,
+      shipmentStatusHistoryRepository
+    );
     const shipmentController = new ShipmentController(shipmentService);
     new ShipmentRoutes(app, middeware, shipmentController);
 
+    const redisService = new RedisService(
+      process.env.REDIS_HOST || 'localhost',
+      parseInt(process.env.REDIS_PORT || '6379', 10),
+      process.env.REDIS_PASSWORD || '',
+      parseInt(process.env.REDIS_DB || '0', 10),
+      parseInt(process.env.REDIS_TTL || '3600', 10)
+    );
 
-
+   
     const port = process.env.PORT || 8000;
     app.listen(port, () => {
       console.log("Server Run Port : " + port);

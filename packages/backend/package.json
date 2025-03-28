@@ -11,6 +11,8 @@
     "test": "jest",
     "dev": "nodemon",
     "migrate": "ts-node src/database/setup.ts migrate",
+    "seed": "ts-node src/database/seeds/index.ts",
+    "setup:db": "yarn migrate && yarn seed",
     "lint": "yarn run lint:js",
     "lint:js": "eslint index.js 'src/*' 'src/**/*' --cache"
   },

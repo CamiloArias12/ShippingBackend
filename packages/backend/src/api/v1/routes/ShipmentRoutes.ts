@@ -14,8 +14,23 @@ export class ShipmentRoutes {
     }
 
     private initializeRoutes(authMiddleware: AuthMiddleware) {
-        this.router.post('/shipments', authMiddleware.authenticate, (req, res) =>
+        this.router.post('/shipment', authMiddleware.authenticate, (req, res) =>
             this.shipmentController.create(req, res)
+        );
+        this.router.put('/shipment/status', authMiddleware.authenticate, (req, res) =>
+            this.shipmentController.updateStatus(req, res)
+        );
+        this.router.put('/shipment/assign', authMiddleware.authenticate, (req, res) =>
+            this.shipmentController.assignDriverAndRoute(req, res)
+        );
+        this.router.get('/shipment', authMiddleware.authenticate, (req, res) =>
+            this.shipmentController.findByUserId(req, res)
+        );
+        this.router.get('/shipment/:id', authMiddleware.authenticate, (req, res) =>
+            this.shipmentController.find(req, res)
+        );
+        this.router.get('/shipment/:id/status-history', authMiddleware.authenticate, (req, res) =>
+            this.shipmentController.getStatusHistory(req, res)
         );
     }
 }

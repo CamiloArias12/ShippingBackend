@@ -6,11 +6,5 @@ export const UserReq = z.object({
   email: z.string().email( {message: 'email-required'}).refine((value) => v.isEmail(value), {
     message: 'email-invalid',
   }),
-
   password: z.string().min(8, {message: 'password-required'}),
-
 });
-
-
-
-

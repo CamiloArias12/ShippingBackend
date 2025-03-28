@@ -17,6 +17,7 @@ export  class UserRoutes {
     private initializeRoutes() {
         this.router.post('/create', (req, res) => this.userController.register(req, res));
         this.router.post('/login', (req, res) => this.userController.login(req, res));
+        this.router.get('/user', this.authMiddleware.authenticate, (req, res) => this.userController.find(req, res));
         
     }
 }

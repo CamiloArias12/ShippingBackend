@@ -1,6 +1,5 @@
 import mysql from 'mysql2/promise';
-import { DriverStatus } from 'src/domain/entities/Driver';
-import { Driver } from 'typeorm';
+import { Driver, DriverStatus } from '../domain/entities/Driver';
 
 export class DriverRepository {
   private connection: mysql.Connection;
@@ -31,5 +30,11 @@ export class DriverRepository {
       `UPDATE driver SET status = ? WHERE id = ?`,
       [status, driverId]
     );
+  }
+  async findAll(): Promise<Driver[]> {
+    const [rows] = await this.connection.execute(
+      'SELECT * FROM driver WHERE deleted_at IS NULL'
+    );
+    return rows as Driver[];
   }
 }
