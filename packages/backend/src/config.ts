@@ -14,7 +14,7 @@ export const config = {
   cors: {
     origin: process.env.CORS_ORIGIN || '*',
   },
-
+  socketPort: Number(process.env.SOCKET_PORT) || 8001,
   db: {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.MYSQL_PORT) || 3306,
@@ -26,7 +26,7 @@ export const config = {
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: Number(process.env.REDIS_PORT) || 6379,
-    password: process.env.REDIS_PASSWORD || undefined,
+    password: process.env.REDIS_PASSWORD || "redis",
     db: Number(process.env.REDIS_DB) || 0,
     ttl: Number(process.env.REDIS_TTL) || 3600,
   },

@@ -39,12 +39,14 @@ services:
     container_name: shippingr
     image: redis:latest
     restart: always
-    command: "--port ${REDIS_PORT}"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--port", "${REDIS_PORT}"]
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
     volumes:
       - "./docker-volume/redis/data:/data"
       - "./docker-volume/redis/conf:/usr/local/etc/redis/redis.conf"
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
     networks:
       - shippingnet
 

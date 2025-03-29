@@ -9,7 +9,7 @@ yarn build
 echo "Waiting for MySQL to be ready..."
 until nc -z -v -w30 mysql 3306
 do
-  echo "Waiting for MySQL connection..."
+  echo "Waiting for MySQL db..."
   sleep 5
 done
 echo "MySQL is up and running!"
@@ -18,12 +18,12 @@ echo "MySQL is up and running!"
 echo "Waiting for Redis to be ready..."
 until nc -z -v -w30 redis 6379
 do
-  echo "Waiting for Redis connection..."
+  echo "Waiting for Redis db..."
   sleep 5
 done
 echo "Redis is up and running!"
 
-# Install netcat if not present (for the connection checks above)
+# Install netcat if not present (for the db checks above)
 apk add --no-cache netcat-openbsd
 
 # Run database migrations and seed data

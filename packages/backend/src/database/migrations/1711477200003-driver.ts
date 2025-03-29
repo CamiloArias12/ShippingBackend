@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from "typeorm";
 
-export class CreateDriverTable1711477200004 implements MigrationInterface {
+export class CreateDriverTable1711477200003 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
       name: "driver",
