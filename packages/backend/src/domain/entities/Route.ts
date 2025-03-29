@@ -1,4 +1,5 @@
-export type Route = {
+export class Route {
+
   id?: number;
   name: string;
   origin: string;
@@ -8,4 +9,5 @@ export type Route = {
   created_at?: Date;
   updated_at?: Date;
   deleted_at?: Date;
-};
+  
+}

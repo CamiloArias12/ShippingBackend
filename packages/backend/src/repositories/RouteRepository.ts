@@ -1,36 +1,39 @@
 import mysql from 'mysql2/promise';
 import { Route } from 'src/domain/entities/Route';
+import { Logger } from '../utils/Logger';
 
 export class RouteRepository {
-  private connection: mysql.Connection;
+    private db: mysql.Connection;
+    private logger: Logger;
 
-  constructor(connection: mysql.Connection) {
-    this.connection = connection;
-  }
+    constructor(db: mysql.Connection, logger: Logger) {
+        this.logger = logger;
+        this.db = db;
+    }
 
-  async create(route: Route): Promise<Route> {
-    const query = `
-      INSERT INTO route (name, origin, destination, distance, estimated_time)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-    const values = [route.name, route.origin, route.destination, route.distance, route.estimated_time];
-    const [result] = await this.connection.execute<mysql.ResultSetHeader>(query, values);
-    return { ...route, id: result.insertId };
-  }
+    async findById(id: number): Promise<Route | null> {
+        try {
+            const [rows] = await this.db.execute(
+                'SELECT * FROM route WHERE id = ? AND deleted_at IS NULL',
+                [id]
+            );
+            const routes = rows as Route[];
+            return routes.length ? routes[0] : null;
+        } catch (error) {
+            this.logger.error(`[RouteRepository](findById) Error finding route by ID ${id}:`, error);
+            throw error;
+        }
+    }
 
-  async findById(id: number): Promise<Route | null> {
-    const [rows] = await this.connection.execute(
-      'SELECT * FROM route WHERE id = ? AND deleted_at IS NULL',
-      [id]
-    );
-    const routes = rows as Route[];
-    return routes.length ? routes[0] : null;
-  }
-
-  async findAll(): Promise<Route[]> {
-    const [rows] = await this.connection.execute(
-      'SELECT * FROM route WHERE deleted_at IS NULL'
-    );
-    return rows as Route[];
-  }
+    async findAll(): Promise<Route[]> {
+        try {
+            const [rows] = await this.db.execute(
+                'SELECT * FROM route WHERE deleted_at IS NULL'
+            );
+            return rows as Route[];
+        } catch (error) {
+            this.logger.error('[RouteRepository](findAll) Error finding all routes:', error);
+            throw error;
+        }
+    }
 }

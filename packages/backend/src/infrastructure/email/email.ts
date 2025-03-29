@@ -3,6 +3,7 @@ import * as handlebars from 'handlebars';
 import * as path from 'path';
 import * as fs from 'fs';
 import { config } from '../../config';
+import { Logger } from '../../utils/Logger';
 
 export type SMTPConfig = {
     host: string;
@@ -19,29 +20,37 @@ export type SMTPConfig = {
 
 export class MailerService {
     private smtpConfigs: Record<string, SMTPConfig>;
+    private logger :Logger
 
-    constructor() {
+    constructor(logger:Logger) {
         this.smtpConfigs = {
             default: config.smtp
         };
+        this.logger = logger;
     }
+
     private createTransporter(configKey?: string): nodemailer.Transporter {
-        const config = this.smtpConfigs[configKey || 'default'];
-        if (!config) {
-            throw new Error(`SMTP configuration "${configKey}" not found.`);
-        }
-
-        return nodemailer.createTransport({
-            host: config.host,
-            port: config.port,
-            name: config.name,
-            secure: config.secure,
-            auth: {
-                user: config.auth.user,
-                pass: config.auth.pass
+        try {
+            const config = this.smtpConfigs[configKey || 'default'];
+            if (!config) {
+                throw new Error(`SMTP configuration "${configKey}" not found.`);
             }
-
-        }, { from: config.auth.user });
+    
+            return nodemailer.createTransport({
+                host: config.host,
+                port: config.port,
+                name: config.name,
+                secure: config.secure,
+                auth: {
+                    user: config.auth.user,
+                    pass: config.auth.pass
+                }
+            }, { from: config.auth.user });
+        }catch(e){
+            this.logger.error(`[MailerService](createTransporter): Error creating transporter for config "${configKey}"`, e);
+            throw e;
+        }
+        
     }
 
     async sendMail(
@@ -50,35 +59,54 @@ export class MailerService {
         html: string,
         attachments?: Array<{ filename: string; path: string }>
     ) {
-        
-        const transporter = this.createTransporter("default");
-        const data=await transporter.sendMail({
-            to: to,
-            subject: subject,
-            html: html,
-            attachments: attachments
-        });
-
+        try {
+            const transporter = this.createTransporter("default");
+            await transporter.sendMail({
+                to: to,
+                subject: subject,
+                html: html,
+                attachments: attachments
+            });
+        } catch (e) {
+            this.logger.error(`[MailerService](sendMail): Error sending email`, e);
+            throw e;
+        }
     }
 
     private loadTemplate(templateName: string): handlebars.TemplateDelegate {
-        const templatesFolderPath = path.join(__dirname, '../../../src/infrastructure/email/templates');
-        const templatePath = path.join(templatesFolderPath, templateName);
-        const templateSource = fs.readFileSync(templatePath, 'utf8');
-        return handlebars.compile(templateSource);
+        try {
+            const templatesFolderPath = path.join(__dirname, '../../../src/infrastructure/email/templates');
+            const templatePath = path.join(templatesFolderPath, templateName);
+            const templateSource = fs.readFileSync(templatePath, 'utf8');
+            return handlebars.compile(templateSource);
+        } catch (e) {
+            this.logger.error(`[MailerService](loadTemplate): Error loading template "${templateName}"`, e);
+            throw e;
+        }
     }
 
     private getTemplate(templateName: string, values?: any): string {
-        if (!templateName) {
-            throw new Error(`Template "${templateName}" not found.`);
+        try {
+            if (!templateName) {
+                throw new Error(`Template "${templateName}" not found.`);
+            }
+            const template = this.loadTemplate(`${templateName}.hbs`);
+            return template(values);
+        } catch (e) {
+            this.logger.error(`[MailerService](getTemplate): Error getting template "${templateName}"`, e);
+            throw e;
         }
-        const template = this.loadTemplate(`${templateName}.hbs`);
-        return template(values);
+
     }
 
     public async sendWelcomeEmail(to: string, name: string) {
-        const html = this.getTemplate('welcome', { name: name });
-        this.sendMail(to, 'Bienvenido a Coordinadora', html,null)
+        try {
+            const html = this.getTemplate('welcome', { name: name });
+            await this.sendMail(to, 'Bienvenido a Coordinadora', html, null)
+        } catch (e) {
+            this.logger.error(`[MailerService](sendWelcomeEmail): Error sending welcome email`, e);
+            console.error(e);
+        }
     }
 
 }

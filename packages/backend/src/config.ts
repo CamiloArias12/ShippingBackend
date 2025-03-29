@@ -14,7 +14,7 @@ export const config = {
   cors: {
     origin: process.env.CORS_ORIGIN || '*',
   },
-
+  socketPort: Number(process.env.SOCKET_PORT) || 8001,
   db: {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.MYSQL_PORT) || 3306,

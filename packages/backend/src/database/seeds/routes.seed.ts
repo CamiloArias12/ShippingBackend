@@ -1,6 +1,6 @@
 import mysql from 'mysql2/promise';
 
-export async function seedRoutes(connection: mysql.Connection): Promise<void> {
+export async function seedRoutes(db: mysql.Connection): Promise<void> {
   
   const routes = [
     {
@@ -42,7 +42,7 @@ export async function seedRoutes(connection: mysql.Connection): Promise<void> {
 
   for (const route of routes) {
     try {
-      const [exists] = await connection.execute(
+      const [exists] = await db.execute(
         'SELECT id FROM route WHERE name = ?',
         [route.name]
       );
@@ -52,7 +52,7 @@ export async function seedRoutes(connection: mysql.Connection): Promise<void> {
         continue;
       }
 
-      await connection.execute(
+      await db.execute(
         `INSERT INTO route 
         (name, origin, destination, distance, estimated_time) 
         VALUES (?, ?, ?, ?, ?)`,

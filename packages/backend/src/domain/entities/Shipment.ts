@@ -1,6 +1,7 @@
 import { ShipmentStatus } from '@shipping/shared/enums';
 
-export type Shipment = {
+export class Shipment {
+
     id?: number;
     weight: number;
     dimensions: string;
@@ -15,4 +16,5 @@ export type Shipment = {
     created_at?: Date;
     updated_at?: Date;
     deleted_at?: Date;
-};
+    
+}

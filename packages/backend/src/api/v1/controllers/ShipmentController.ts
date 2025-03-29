@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
 import { ShipmentService } from '../../../services/ShipmentService';
 import { ShipmentCreateReq,ShipmentUpdateStatusReq,AssignShipmentReq } from '@shipping/shared/dist/shipment/index';
+import { Logger } from '../../../utils/Logger';
 
 
 export class ShipmentController {
     private shipmentService: ShipmentService;
+    private logger: Logger;
 
-    constructor(shipmentService: ShipmentService) {
+    constructor(shipmentService: ShipmentService,logger: Logger) {
+        this.logger = logger;
         this.shipmentService = shipmentService;
     }
 
@@ -28,7 +31,7 @@ export class ShipmentController {
             const result = await this.shipmentService.create({ user_id: user.id, ...validation.data });
             res.status(201).json(result);
         } catch (error) {
-            console.error('Error creating shipment:', error);
+            this.logger.error('[ShipmentController](create) Error creating shipment:', error);
             res.status(500).json({ error: 'Failed to register shipment' });
         }
     }
@@ -44,7 +47,7 @@ export class ShipmentController {
             await this.shipmentService.updateStatus({...validation.data, userId: req.user?.id });
             res.status(200).json({ message: 'Status updated' });
         } catch (error) {
-            console.error('Error updating shipment status:', error);
+            this.logger.error('[ShipmentController](create) Error updating shipment status:', error);
             res.status(500).json({ error: 'Failed to update shipment status' });
         }
     }
@@ -59,6 +62,7 @@ export class ShipmentController {
             await this.shipmentService.assignDriverAndRoute(validation.data);
             res.status(200).json({ message: 'Driver and route assigned' });
         } catch (error) {
+            this.logger.error('[ShipmentController](assignDriverAndRoute) Error assigning driver and route:', error);
             res.status(500).json({ error: 'Failed to assign driver and route' });
         }
     }
@@ -73,7 +77,7 @@ export class ShipmentController {
             const shipments = await this.shipmentService.findByUserId(user.id);
             res.status(200).json(shipments);
         } catch (error) {
-            console.error('Error finding shipments:', error);
+            this.logger.error('[ShipmentController](findByUserId) Error finding shipments by user ID:', error);
             res.status(500).json({ error: 'Failed to find shipments' });
         }
     }
@@ -92,7 +96,7 @@ export class ShipmentController {
             }
             res.status(200).json(shipment);
         } catch (error) {
-            console.error('Error finding shipment:', error);
+            this.logger.error('[ShipmentController](find) Error finding shipment:', error);
             res.status(500).json({ error: 'Failed to find shipment' });
         }
     }
@@ -104,6 +108,7 @@ export class ShipmentController {
             const history = await this.shipmentService.getStatusHistory(Number(id));
             res.status(200).json(history);
         } catch (error) {
+            this.logger.error('[ShipmentController](find) Error getting shipment status history:', error);
             res.status(500).json({ error: 'Failed to get status history' });
         }
     }

@@ -1,11 +1,7 @@
+import { UserRole } from '@shipping/shared/enums';
 
-export enum UserRole {
-    ADMIN = 'admin',
-    USER = 'user',
-    DRIVER = 'driver'
-}
+export class User {
 
-export type User = {
     id?: number;
     name: string;
     email: string;
@@ -14,4 +10,5 @@ export type User = {
     created_at?: Date;
     updated_at?: Date;
     deleted_at?: Date;
+    
 }

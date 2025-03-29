@@ -1,13 +1,13 @@
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcrypt';
 
-export async function seedAdmin(connection: mysql.Connection): Promise<void> {
+export async function seedAdmin(db: mysql.Connection): Promise<void> {
   console.log('Seeding admin user...');
   
   try {
     const adminEmail = 'admin@shipping.com';
     
-    const [existingAdmins] = await connection.execute(
+    const [existingAdmins] = await db.execute(
       'SELECT id FROM user WHERE email = ? AND role = ?',
       [adminEmail, 'admin']
     );
@@ -19,7 +19,7 @@ export async function seedAdmin(connection: mysql.Connection): Promise<void> {
     
     const hashedPassword = await bcrypt.hash('admin123', 10);
     
-    await connection.execute(
+    await db.execute(
       `INSERT INTO user (name, email, password, role) 
        VALUES (?, ?, ?, ?)`,
       ['Administrator', adminEmail, hashedPassword, 'admin']

@@ -35,8 +35,8 @@ export class Logger {
     this.loggerInstance.info(message);
   }
 
-  error(message: string): void {
-    this.loggerInstance.error(message);
+  error(message: string,error:any): void {
+    this.loggerInstance.error(message,error);
   }
 
   warn(message: string): void {

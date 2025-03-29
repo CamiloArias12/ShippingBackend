@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import { DriverService } from 'src/services/DriverService';
+import { Logger } from '../../../utils/Logger';
 
 
 export class UserController {
     private driverService: DriverService;
+    private logger:Logger
 
-    constructor(driverService: DriverService) {
+    constructor(driverService: DriverService, logger: Logger) {
+        this.logger = logger;
         this.driverService = driverService;
     }
 
@@ -23,7 +26,7 @@ export class UserController {
             }
             res.status(200).json(data);
         } catch (error) {
-            console.error('Error finding user:', error);
+            this.logger.error('Error finding user:', error);
             res.status(500).json({ error: 'Failed to find user' });
         }
     }

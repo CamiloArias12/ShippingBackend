@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-include path="./header.mjml" />
+    <mj-section>
+      <mj-column>
+        <mj-text>Hola {{name}}</mj-text>
+        <mj-text>Tines un nuevo envio con guia No {{uuid}}  </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-include path="./footer.mjml" />
+  </mj-body>
+</mjml>

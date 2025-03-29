@@ -1,6 +1,7 @@
 import { DriverStatus } from '@shipping/shared/enums';
 
-export type Driver = {
+export class Driver {
+
   id?: number;
   user_id: number;
   license: string;
@@ -10,4 +11,4 @@ export type Driver = {
   created_at?: Date;
   updated_at?: Date;
   deleted_at?: Date;
-};
+}

@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcrypt';
 
-export async function seedDrivers(connection: mysql.Connection): Promise<void> {
+export async function seedDrivers(db: mysql.Connection): Promise<void> {
     const drivers = [
         {
             user: {
@@ -51,7 +51,7 @@ export async function seedDrivers(connection: mysql.Connection): Promise<void> {
 
     for (const driverData of drivers) {
         try {
-            const [existingUsers] = await connection.execute(
+            const [existingUsers] = await db.execute(
                 'SELECT id FROM user WHERE email = ?',
                 [driverData.user.email]
             );
@@ -64,7 +64,7 @@ export async function seedDrivers(connection: mysql.Connection): Promise<void> {
             } else {
                 const hashedPassword = await bcrypt.hash(driverData.user.password, 10);
 
-                const [result] = await connection.execute(
+                const [result] = await db.execute(
                     `INSERT INTO user (name, email, password, role) VALUES (?, ?, ?, ?)`,
                     [driverData.user.name, driverData.user.email, hashedPassword, driverData.user.role]
                 );
@@ -73,7 +73,7 @@ export async function seedDrivers(connection: mysql.Connection): Promise<void> {
                 console.log(`Created user ${driverData.user.email} with ID: ${userId}`);
             }
 
-            const [existingDrivers] = await connection.execute(
+            const [existingDrivers] = await db.execute(
                 'SELECT id FROM driver WHERE user_id = ?',
                 [userId]
             );
@@ -83,7 +83,7 @@ export async function seedDrivers(connection: mysql.Connection): Promise<void> {
                 continue;
             }
 
-            await connection.execute(
+            await db.execute(
                 `INSERT INTO driver 
         (user_id, license, vehicle_type, vehicle_capacity, status) 
         VALUES (?, ?, ?, ?, ?)`,

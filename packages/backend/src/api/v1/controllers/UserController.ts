@@ -2,15 +2,18 @@ import { Request, Response } from 'express';
 import { AuthLoginReq } from '@shipping/shared/dist/auth';
 import { UserCreateReq } from '@shipping/shared/dist/user/index';
 import { UserService } from 'src/services/UserService';
+import { Logger } from '../../../utils/Logger';
 
 
 export class UserController {
     private userService: UserService;
+    private logger: Logger;
 
-    constructor(userService: UserService) {
+    constructor(userService: UserService, logger: Logger) {
+        this.logger = logger;
         this.userService = userService;
     }
-    async register(req: Request, res: Response): Promise<void> {
+    async create(req: Request, res: Response): Promise<void> {
         const validation = UserCreateReq.safeParse(req.body);
         if (!validation.success) {
             res.status(400).json({ error: 'Invalid fields', validation });
@@ -21,7 +24,7 @@ export class UserController {
             const user = await this.userService.create(validation.data);
             res.status(201).json(user);
         } catch (error) {
-            console.error('Error registering user:', error);
+            this.logger.error('[UserController](create) Error creating user:', error);
             res.status(500).json({ error: 'Failed to register user' });
         }
     }
@@ -41,6 +44,7 @@ export class UserController {
             }
             res.status(200).json(result);
         } catch (error) {
+            this.logger.error('[UserController](login) Error logging in user:', error);
             res.status(500).json({ error: 'Failed to login user' });
         }
     }
@@ -59,7 +63,7 @@ export class UserController {
             }
             res.status(200).json(data);
         } catch (error) {
-            console.error('Error finding user:', error);
+            this.logger.error('[UserController](find) Error finding user:', error);
             res.status(500).json({ error: 'Failed to find user' });
         }
     }

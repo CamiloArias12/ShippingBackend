@@ -1,10 +1,14 @@
 import mysql from 'mysql2/promise';
 import { ShipmentStatusHistory } from '../domain/entities/ShipmentStatusHistory';
-export class ShipmentStatusHistoryRepository {
-    private connection: mysql.Connection;
+import { Logger } from '../utils/Logger';
 
-    constructor(connection: mysql.Connection) {
-        this.connection = connection;
+export class ShipmentStatusHistoryRepository {
+    private db: mysql.Connection;
+    private logger: Logger;
+
+    constructor(db: mysql.Connection, logger: Logger) {
+        this.db = db;
+        this.logger = logger;
     }
 
     async create(history: ShipmentStatusHistory): Promise<ShipmentStatusHistory> {
@@ -21,8 +25,13 @@ export class ShipmentStatusHistoryRepository {
             history.created_at,
         ];
 
-        const [result] = await this.connection.execute<mysql.ResultSetHeader>(query, values);
-        return { ...history, id: result.insertId };
+        try {
+            const [result] = await this.db.execute<mysql.ResultSetHeader>(query, values);
+            return { ...history, id: result.insertId };
+        } catch (error) {
+            this.logger.error('[ShipmentStatusHistoryRepository](create) Error creating shipment status history:', error);
+            throw error;
+        }
     }
 
     async findByShipmentId(shipmentId: number): Promise<ShipmentStatusHistory[]> {
@@ -31,7 +40,12 @@ export class ShipmentStatusHistoryRepository {
       WHERE shipment_id = ? AND deleted_at IS NULL
       ORDER BY changed_at DESC
     `;
-        const [rows] = await this.connection.execute(query, [shipmentId]);
-        return rows as ShipmentStatusHistory[];
+        try {
+            const [rows] = await this.db.execute(query, [shipmentId]);
+            return rows as ShipmentStatusHistory[];
+        } catch (error) {
+            this.logger.error('[ShipmentStatusHistoryRepository](findByShipmentId) Error finding shipment status history by shipment ID:', error);
+            throw error;
+        }
     }
 }

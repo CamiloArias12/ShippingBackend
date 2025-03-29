@@ -1,17 +1,46 @@
 import Redis from 'ioredis';
 
 export class RedisService {
+  private redisConfig: {
+    host: string;
+    port: number;
+    password: string;
+    db: number;
+    ttl: number;
+  };
   private client: Redis;
-  private readonly ttl: number;
+
 
   constructor(host: string, port: number, password: string, db: number, ttl: number) {
-    this.client = new Redis({
+    this.redisConfig = {
       host,
       port,
-      password: password || undefined,
-      db
-    });
-    this.ttl = ttl;
+      password,
+      db,
+      ttl,
+    };
+  }
+
+  async connect(): Promise<void> { 
+    try {
+      this.client = new Redis({
+        host: this.redisConfig.host,
+        port: this.redisConfig.port,
+        password: this.redisConfig.password,
+        db: this.redisConfig.db,
+      });
+    } catch (error) {
+      console.error('Redis db error:', error);
+    }
+  }
+  
+  async disconnect(): Promise<void> {
+    try {
+      await this.client.quit();
+      console.log('Redis disconnected');
+    } catch (error) {
+      console.error('Redis disdb error:', error);
+    }
   }
 
   async get(key: string): Promise<any> {
@@ -24,14 +53,10 @@ export class RedisService {
     }
   }
 
-  async set(key: string, value: any, ttl?: number): Promise<void> {
+  async set(key: string, value: any): Promise<void> {
     try {
       const stringValue = JSON.stringify(value);
-      if (ttl) {
-        await this.client.set(key, stringValue, 'EX', ttl);
-      } else {
-        await this.client.set(key, stringValue, 'EX', this.ttl);
-      }
+      await this.client.set(key, stringValue, 'EX', this.redisConfig.ttl);
     } catch (error) {
       console.error('Redis set error:', error);
     }

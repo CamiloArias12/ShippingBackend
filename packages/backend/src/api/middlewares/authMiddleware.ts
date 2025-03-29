@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from '../../utils/Jwt';
+import { Logger } from '../../utils/Logger';
 
 declare global {
   namespace Express {
@@ -11,12 +12,14 @@ declare global {
 
 export class AuthMiddleware {
   private jwtService: JwtService;
+  private looger: Logger;
 
-  constructor() {
-    this.jwtService = new JwtService();
+  constructor(jwtService: JwtService, logger: Logger) {
+    this.jwtService = jwtService;
+    this.looger = logger;
   }
 
-  public authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public async authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authHeader = req.headers.authorization;
 
@@ -32,9 +35,11 @@ export class AuthMiddleware {
         req.user = decoded;
         next();
       } catch (error) {
+        this.looger.error('Invalid token:', error);
         res.status(401).json({ error: 'Invalid or expired token' });
       }
     } catch (error) {
+      this.looger.error('[AuthMiddleware](authenticate) Error in authentication middleware:', error);
       res.status(500).json({ error: 'Authentication failed' });
     }
   };

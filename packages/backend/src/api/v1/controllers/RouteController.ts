@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import { RouteService } from 'src/services/RouteService';
+import { Logger } from '../../../utils/Logger';
 
 
 export class RouteController {
     private routeService: RouteService;
+    private logger: Logger;
 
-    constructor(routeService: RouteService) {
+    constructor(routeService: RouteService, logger: Logger) {
+        this.logger = logger;
         this.routeService = routeService;
     }
 
@@ -23,7 +26,7 @@ export class RouteController {
             }
             res.status(200).json(data);
         } catch (error) {
-            console.error('Error finding user:', error);
+            this.logger.error('Error finding user:', error);
             res.status(500).json({ error: 'Failed to find user' });
         }
     }

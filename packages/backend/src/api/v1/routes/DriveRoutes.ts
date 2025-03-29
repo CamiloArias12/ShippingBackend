@@ -15,8 +15,7 @@ export  class UserRoutes {
         this.initializeRoutes();
     }
     private initializeRoutes() {
-        this.router.get('/driver', this.authMiddleware.authenticate, (req, res) => this.routeController.findAll(req, res));
-        
+        this.router.get('/driver', this.authMiddleware.authenticate, (req, res) => this.routeController.findAll(req, res)); 
     }
 }
 

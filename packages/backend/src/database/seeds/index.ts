@@ -7,10 +7,10 @@ import { seedAdmin } from './admin.seed';
 async function seed() {
   console.log('Starting database seeding...');
   
-  let connection;
+  let db;
   
   try {
-    connection = await mysql.createConnection({
+    db = await mysql.createConnection({
       host: config.db.host || "localhost",
       port: config.db.port || 3306,
       database: config.db.name || "shipping_db",
@@ -18,17 +18,17 @@ async function seed() {
       password: config.db.password || "shipping_password"
     });
     
-    await seedAdmin(connection);    
-    await seedRoutes(connection);
-    await seedDrivers(connection); 
+    await seedAdmin(db);    
+    await seedRoutes(db);
+    await seedDrivers(db); 
     
     console.log('Database seeding completed successfully');
   } catch (error) {
     console.error('Error during seeding:', error);
   } finally {
-    if (connection) {
-      await connection.end();
-      console.log('Database connection closed');
+    if (db) {
+      await db.end();
+      console.log('Database db closed');
     }
   }
 }
