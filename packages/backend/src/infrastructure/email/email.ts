@@ -34,8 +34,7 @@ export class MailerService {
             const config = this.smtpConfigs[configKey || 'default'];
             if (!config) {
                 throw new Error(`SMTP configuration "${configKey}" not found.`);
-            }
-    
+            }           
             return nodemailer.createTransport({
                 host: config.host,
                 port: config.port,
@@ -67,6 +66,7 @@ export class MailerService {
                 html: html,
                 attachments: attachments
             });
+            console.log(transporter);
         } catch (e) {
             this.logger.error(`[MailerService](sendMail): Error sending email`, e);
             throw e;
