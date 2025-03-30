@@ -1200,7 +1200,7 @@ __metadata:
     nodemon: ^3.1.7
     reflect-metadata: ^0.2.2
     rimraf: ^6.0.1
-    typescript: 5.7.3
+    typescript: ^5.4.5
     validator: ^13.12.0
     zod: ^3.23.8
   languageName: unknown
@@ -9520,17 +9520,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.7.3":
-  version: 5.7.3
-  resolution: "typescript@npm:5.7.3"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 6c38b1e989918e576f0307e6ee013522ea480dfce5f3ca85c9b2d8adb1edeffd37f4f30cd68de0c38a44563d12ba922bdb7e36aa2dac9c51de5d561e6e9a2e9c
-  languageName: node
-  linkType: hard
-
-"typescript@npm:^5.6.2":
+"typescript@npm:^5.4.5, typescript@npm:^5.6.2":
   version: 5.8.2
   resolution: "typescript@npm:5.8.2"
   bin:
@@ -9540,17 +9530,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@5.7.3#~builtin<compat/typescript>":
-  version: 5.7.3
-  resolution: "typescript@patch:typescript@npm%3A5.7.3#~builtin<compat/typescript>::version=5.7.3&hash=f3b441"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 633cd749d6cd7bc842c6b6245847173bba99742a60776fae3c0fbcc0d1733cd51a733995e5f4dadd8afb0e64e57d3c7dbbeae953a072ee303940eca69e22f311
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@^5.6.2#~builtin<compat/typescript>":
+"typescript@patch:typescript@^5.4.5#~builtin<compat/typescript>, typescript@patch:typescript@^5.6.2#~builtin<compat/typescript>":
   version: 5.8.2
   resolution: "typescript@patch:typescript@npm%3A5.8.2#~builtin<compat/typescript>::version=5.8.2&hash=f3b441"
   bin:

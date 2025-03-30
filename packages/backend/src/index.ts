@@ -20,6 +20,10 @@ import { RedisService } from './infrastructure/cache/redis';
 import { ShipmentRoutes } from "./api/v1/routes/ShipmentRoutes";
 import { Logger } from "./utils/Logger";
 import { SocketIOService } from "./infrastructure/socketio/socketio";
+import { DriverService } from './services/DriverService';
+import { RouteService } from './services/RouteService';
+import { DriverRepository } from './repositories/DriverRepository';
+import { RouteRepository } from './repositories/RouteRepository';
 
 async function main() {
   const logger = new Logger();
@@ -76,22 +80,33 @@ async function main() {
     // General Services
     const mailerService = new MailerService(logger);
 
-    // User
-    const userRepository = new UserRepository(dbConnection, logger);
-    const userService = new UserService(jwtService, userRepository, mailerService, logger);
-    const userController = new UserController(userService,logger);
-    const userRoutes = new UserRoutes(app, authMiddleware, userController);
-    userRoutes.initializeRoutes();
+    // Initialize repositories
+    const userRepository = new UserRepository(dbPool, logger);
+    const driverRepository = new DriverRepository(dbPool, logger);
+    const routeRepository = new RouteRepository(dbPool, logger);
+    const shipmentRepository = new ShipmentRepository(dbPool, logger);
+    const shipmentStatusHistoryRepository = new ShipmentStatusHistoryRepository(dbPool, logger);
 
-    // Shipment
-    const shipmentRepository = new ShipmentRepository(dbConnection, logger);
-    const shipmentStatusHistoryRepository = new ShipmentStatusHistoryRepository(dbConnection, logger);
+    // Initialize services
+    const userService = new UserService(jwtService, userRepository, mailerService, logger);
+    const driverService = new DriverService(driverRepository, userService, logger);
+    const routeService = new RouteService(routeRepository, logger);
     const shipmentService = new ShipmentService(
       shipmentRepository,
       mailerService,
       shipmentStatusHistoryRepository,
-      logger
+      logger,
+      userService,
+      driverService,
+      routeService
     );
+
+    // User
+    const userController = new UserController(userService, logger);
+    const userRoutes = new UserRoutes(app, authMiddleware, userController);
+    userRoutes.initializeRoutes();
+
+    // Shipment
     const shipmentController = new ShipmentController(shipmentService, logger);
     const shipmentRoutes = new ShipmentRoutes(app, authMiddleware, shipmentController);
     shipmentRoutes.initializeRoutes();

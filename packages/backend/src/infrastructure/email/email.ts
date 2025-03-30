@@ -66,7 +66,6 @@ export class MailerService {
                 html: html,
                 attachments: attachments
             });
-            console.log(transporter);
         } catch (e) {
             this.logger.error(`[MailerService](sendMail): Error sending email`, e);
             throw e;

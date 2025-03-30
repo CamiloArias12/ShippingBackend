@@ -18,4 +18,12 @@ export class RouteService {
             throw error;
         }
     }
+    async find(id: number): Promise<Route | null> {
+        try {
+            return await this.routeRepository.findById(id);
+        } catch (error) {
+            this.logger.error('[RouteService](find) Error in find route service', error);
+            throw error;
+        }
+    }
 }

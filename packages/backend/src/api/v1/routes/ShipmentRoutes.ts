@@ -14,22 +14,22 @@ export class ShipmentRoutes {
     }
 
      initializeRoutes() {
-        this.router.post('/shipment', this.authMiddleware.authenticate, (req, res) =>
+        this.router.post('/shipments', this.authMiddleware.authenticate, (req, res) =>
             this.shipmentController.create(req, res)
         );
-        this.router.put('/shipment/status', this.authMiddleware.authenticate, (req, res) =>
+        this.router.put('/shipments/status', this.authMiddleware.authenticate, (req, res) =>
             this.shipmentController.updateStatus(req, res)
         );
-        this.router.put('/shipment/assign', this.authMiddleware.authenticate, (req, res) =>
+        this.router.put('/shipments/assign', this.authMiddleware.authenticate, (req, res) =>
             this.shipmentController.assignDriverAndRoute(req, res)
         );
-        this.router.get('/shipment', this.authMiddleware.authenticate, (req, res) =>
+        this.router.get('/shipments', this.authMiddleware.authenticate, (req, res) =>
             this.shipmentController.findByUserId(req, res)
         );
-        this.router.get('/shipment/:id', this.authMiddleware.authenticate, (req, res) =>
+        this.router.get('/shipments/:id', this.authMiddleware.authenticate, (req, res) =>
             this.shipmentController.find(req, res)
         );
-        this.router.get('/shipment/:id/status-history', this.authMiddleware.authenticate, (req, res) =>
+        this.router.get('/shipments/:id/status-history', this.authMiddleware.authenticate, (req, res) =>
             this.shipmentController.getStatusHistory(req, res)
         );
     }

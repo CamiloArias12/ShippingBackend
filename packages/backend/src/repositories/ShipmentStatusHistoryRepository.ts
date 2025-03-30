@@ -38,7 +38,7 @@ export class ShipmentStatusHistoryRepository {
         const query = `
       SELECT * FROM shipment_status_history
       WHERE shipment_id = ? AND deleted_at IS NULL
-      ORDER BY changed_at DESC
+      ORDER BY created_at DESC
     `;
         try {
             const [rows] = await this.db.execute(query, [shipmentId]);
