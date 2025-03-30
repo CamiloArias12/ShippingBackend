@@ -1,5 +1,7 @@
 import {z} from 'zod';
 import v from 'validator';
+import { DriverStatus, UserRole } from '../enums';
+import { Driver } from '..';
 
 export const UserCreateReq = z.object({
   name: z.string().min(1, { message: "name.required" }).max(50, { message: "name.maxLen" }),
@@ -14,3 +16,15 @@ export const UserCreateReq = z.object({
 });
 
 export type UserCreateDto = z.infer<typeof UserCreateReq>;
+
+export type User= {
+  id?: number;
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+  driver: Driver;
+  created_at?: Date;
+  updated_at?: Date;
+  deleted_at?: Date;
+}

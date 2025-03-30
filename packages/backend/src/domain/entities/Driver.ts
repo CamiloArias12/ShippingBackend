@@ -1,7 +1,6 @@
 import { DriverStatus } from '@shipping/shared/enums';
 
 export class Driver {
-
   id?: number;
   user_id: number;
   license: string;

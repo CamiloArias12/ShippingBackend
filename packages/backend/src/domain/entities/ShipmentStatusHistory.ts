@@ -1,7 +1,6 @@
 import { ShipmentStatus } from '@shipping/shared/enums';
 
 export class ShipmentStatusHistory {
-
   id?: number;
   shipment_id: number;
   previous_status?: ShipmentStatus;
@@ -11,5 +10,4 @@ export class ShipmentStatusHistory {
   created_at?: Date;
   updated_at?: Date;
   deleted_at?: Date;
-  
 }

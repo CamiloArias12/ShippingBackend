@@ -1,5 +1,4 @@
 export class Route {
-
   id?: number;
   name: string;
   origin: string;
@@ -9,5 +8,4 @@ export class Route {
   created_at?: Date;
   updated_at?: Date;
   deleted_at?: Date;
-  
 }
