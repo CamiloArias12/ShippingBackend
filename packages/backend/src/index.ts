@@ -10,7 +10,7 @@ import { UserService } from "./services/UserService";
 import { JwtService } from "./utils/Jwt";
 import { UserController } from "./api/v1/controllers/UserController";
 import { UserRoutes } from "./api/v1/routes/UserRoutes";
-import { AuthMiddleware } from "./api/middlewares/AuthMiddleware";
+import { AuthMiddleware } from "./api/middlewares/MiddlewareAuth";
 import { ShipmentController } from "./api/v1/controllers/ShipmentController";
 import { ShipmentService } from "./services/ShipmentService";
 import { ShipmentRepository } from "./repositories/ShipmentRepository";

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AuthMiddleware } from '../../middlewares/AuthMiddleware';
+import { AuthMiddleware } from '../../middlewares/MiddlewareAuth';
 import { DriverController } from '../controllers/DriverController';
 
 export  class DriverRoutes {

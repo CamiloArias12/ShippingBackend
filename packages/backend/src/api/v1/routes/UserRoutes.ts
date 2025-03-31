@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { UserController } from '../controllers/UserController';
-import { AuthMiddleware } from '../../middlewares/AuthMiddleware';
+import { AuthMiddleware } from '../../middlewares/MiddlewareAuth';
 
 /**
  * @swagger

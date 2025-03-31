@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AuthMiddleware } from '../../middlewares/AuthMiddleware';
+import { AuthMiddleware } from '../../middlewares/MiddlewareAuth';
 import { RouteController } from '../controllers/RouteController';
 
 export class RouteRoutes {
