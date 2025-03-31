@@ -60,7 +60,6 @@ export async function seedDrivers(db: mysql.Connection): Promise<void> {
 
             if (Array.isArray(existingUsers) && existingUsers.length > 0) {
                 userId = (existingUsers[0] as mysql.RowDataPacket).id;
-                console.log(`User ${driverData.user.email} already exists, using existing user ID: ${userId}`);
             } else {
                 const hashedPassword = await bcrypt.hash(driverData.user.password, 10);
 
@@ -70,7 +69,6 @@ export async function seedDrivers(db: mysql.Connection): Promise<void> {
                 );
 
                 userId = (result as mysql.ResultSetHeader).insertId;
-                console.log(`Created user ${driverData.user.email} with ID: ${userId}`);
             }
 
             const [existingDrivers] = await db.execute(

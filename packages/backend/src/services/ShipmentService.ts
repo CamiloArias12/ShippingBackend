@@ -1,4 +1,3 @@
-import mysql from 'mysql2/promise';
 import { Shipment } from '../domain/entities/Shipment';
 import { ShipmentRepository } from '../repositories/ShipmentRepository';
 import { MailerService } from '../infrastructure/email/email';
@@ -9,6 +8,9 @@ import { Logger } from '../utils/Logger';
 import { UserService } from './UserService';
 import { DriverService } from './DriverService';
 import { RouteService } from './RouteService';
+import { v4 as uuidv4 } from 'uuid';
+import { SocketIOService } from '../infrastructure/socketio/socketio';
+import { RedisService } from 'src/infrastructure/cache/redis';
 
 export class ShipmentService {
     private shipmentRepository: ShipmentRepository;
@@ -18,6 +20,8 @@ export class ShipmentService {
     private userService: UserService;
     private driverService: DriverService;
     private routeService: RouteService;
+    private socketIOService: SocketIOService;
+    private redisService: RedisService;
 
     constructor(
         shipmentRepository: ShipmentRepository,
@@ -26,7 +30,9 @@ export class ShipmentService {
         logger: Logger,
         userService: UserService,
         driverService: DriverService,
-        routeService: RouteService
+        routeService: RouteService,
+        socketIOService: SocketIOService,
+        redisService: RedisService
     ) {
         this.logger = logger;
         this.shipmentRepository = shipmentRepository;
@@ -35,20 +41,22 @@ export class ShipmentService {
         this.userService = userService;
         this.driverService = driverService;
         this.routeService = routeService;
+        this.socketIOService = socketIOService;
+        this.redisService = redisService;
     }
 
     async create(shipment: Shipment): Promise<Shipment | null> {
         try {
+            shipment.id = uuidv4();
             const newShipment = await this.shipmentRepository.create(shipment);
             if (!newShipment) return null;
             const user = await this.userService.find(shipment.user_id);
             if (!user) {
                 throw new Error('Invalid user ID');
             }
-
             if (newShipment.status) {
                 await this.shipmentStatusHistoryRepository.create({
-                    shipment_id: newShipment.id!,
+                    shipment_id: shipment.id!,
                     new_status: newShipment.status,
                     changed_by_user_id: shipment.user_id,
                     created_at: new Date(),
@@ -76,8 +84,23 @@ export class ShipmentService {
                 changed_by_user_id: updateStatusDto.userId,
                 created_at: new Date(),
             });
+            const cacheKey = `shipment:${updateStatusDto.id}`;
+            const cachedData = await this.redisService.get(cacheKey);
+
+            if (cachedData) {
+                this.logger.log('info', `Cache hit for shipment ID: `);
+               await  this.redisService.delete(cacheKey);
+            }
+            const data = await this.find(updateStatusDto.id);
+            if (!data) {
+                throw new Error('Shipment not found');
+            }
+            
+            this.socketIOService.emit(`shipment:${updateStatusDto.id}`, data);
+
+            this.logger.log('info', `Shipment status updated and event emitted for shipment ID: ${updateStatusDto.id}`);
         } catch (error) {
-            this.logger.error('[ShipmentService](assignDriverAndRoute) Error updating shipment status', error);
+            this.logger.error('[ShipmentService](updateStatus) Error updating shipment status', error);
             throw error;
         }
     }
@@ -91,22 +114,34 @@ export class ShipmentService {
         }
     }
 
-    async find(id: number): Promise<Shipment | null> {
+    async find(id: string): Promise<Shipment | null> {
         try {
+            const cacheKey = `shipment:${id}`;
+            const cachedData = await this.redisService.get(cacheKey);
+
+            if (cachedData) {
+                this.logger.log('info', `Cache hit for shipment ID: ${id}`);
+                return JSON.parse(cachedData);
+            }
+
             const data = await this.shipmentRepository.findById(id);
             if (!data) {
                 throw new Error('Shipment not found');
             }
-            data.user = await this.userService.find(data.user_id);
+            data.shipment_status_history = await this.shipmentStatusHistoryRepository.findByShipmentId(data.id!);
+            if (data.user_id) {
+                data.user = await this.userService.find(data.user_id);
+            }
             if (data.driver_id) {
                 data.driver = await this.driverService.find(data.driver_id);
             }
             if (data.route_id) {
                 data.route = await this.routeService.find(data.route_id);
             }
-            data.shipment_status_history = await this.shipmentStatusHistoryRepository.findByShipmentId(id);
-            return data;
 
+            await this.redisService.set(cacheKey, JSON.stringify(data));
+
+            return data;
         } catch (error) {
             this.logger.error('[ShipmentService](find) Error finding shipment', error);
             throw error;
@@ -115,25 +150,25 @@ export class ShipmentService {
 
     async findByUserId(userId: number): Promise<Shipment[]> {
         try {
-            const shipments = await this.shipmentRepository.findByUserId(userId);
-            for (const shipment of shipments) {
-                shipment.user = await this.userService.find(userId);
+            const data = await this.shipmentRepository.findByUserId(userId);
+            for (const shipment of data) {
+                shipment.shipment_status_history = await this.shipmentStatusHistoryRepository.findByShipmentId(shipment.id!);
+                shipment.user = await this.userService.find(shipment.user_id);
                 if (shipment.driver_id) {
                     shipment.driver = await this.driverService.find(shipment.driver_id);
                 }
                 if (shipment.route_id) {
                     shipment.route = await this.routeService.find(shipment.route_id);
                 }
-                shipment.shipment_status_history = await this.shipmentStatusHistoryRepository.findByShipmentId(shipment.id!);
             }
-            return shipments;
+            return data;
         } catch (error) {
             this.logger.error('[ShipmentService](findByUserId) Error finding shipments by user ID', error);
             throw error;
         }
     }
 
-    async getStatusHistory(shipmentId: number): Promise<any[]> {
+    async getStatusHistory(shipmentId: string): Promise<any[]> {
         try {
             return await this.shipmentStatusHistoryRepository.findByShipmentId(shipmentId);
         } catch (error) {
@@ -151,11 +186,20 @@ export class ShipmentService {
         limit?: number;
     }): Promise<{ shipments: any[]; total: number }> {
         try {
+            const cacheKey = `shipments:${JSON.stringify(filters)}`;
+
+            const cachedData = await this.redisService.get(cacheKey);
+            if (cachedData) {
+                this.logger.log('info', `Cache hit for key: ${cacheKey}`);
+                return JSON.parse(cachedData);
+            }
             const parsedFilters = {
                 ...filters,
                 startDate: filters.startDate ? new Date(filters.startDate) : undefined,
                 endDate: filters.endDate ? new Date(filters.endDate) : undefined,
             };
+
+            await this.redisService.set(cacheKey, JSON.stringify(parsedFilters));
 
             return this.shipmentRepository.findWithAdvancedFilters(parsedFilters);
         } catch (error) {
@@ -164,19 +208,56 @@ export class ShipmentService {
         }
     }
 
-    async getLogisticsPerformanceMetrics(filters: {
-        startDate?: string;
-        endDate?: string;
+    async getShipmentsWithMetrics(filters: {
+        startDate?: Date;
+        endDate?: Date;
+        status?: ShipmentStatus;
+        driverId?: number;
+        page?: number;
+        limit?: number;
     }): Promise<any> {
         try {
-            const parsedFilters = {
-                startDate: filters.startDate ? new Date(filters.startDate) : undefined,
-                endDate: filters.endDate ? new Date(filters.endDate) : undefined,
-            };
+            const cacheKey = `shipments:metrics:${JSON.stringify(filters)}`;
+            const cachedData = await this.redisService.get(cacheKey);
+            if (cachedData) {
+                this.logger.log('info', `Cache hit for key: ${cacheKey}`);
+                return JSON.parse(cachedData);
+            }
+            const data= this.shipmentRepository.getShipmentsCountAndGroupedByDate(filters);
+            await this.redisService.set(cacheKey, JSON.stringify(data));
+            return data;
+        } catch (error) {
+            this.logger.error('[ShipmentService](getShipmentsWithMetrics) Error fetching shipments with metrics:', error);
+            throw error;
+        }
+    }
 
-            return this.shipmentRepository.getPerformanceMetrics(parsedFilters);
+    async getLogisticsPerformanceMetrics(filter:any): Promise<any> {
+        try {
+            return this.shipmentRepository.getFilteredShipments(filter);
         } catch (error) {
             this.logger.error('[ShipmentService](getLogisticsPerformanceMetrics) Error getting logistics performance metrics service', error);
+            throw error;
+        }
+    }
+
+    async findAll(): Promise<Shipment[]> {
+        try {
+            const data = await this.shipmentRepository.findAll();
+            for (const shipment of data) {
+
+                shipment.shipment_status_history = await this.shipmentStatusHistoryRepository.findByShipmentId(shipment.id!);
+                shipment.user = await this.userService.find(shipment.user_id);
+                if (shipment.driver_id) {
+                    shipment.driver = await this.driverService.find(shipment.driver_id);
+                }
+                if (shipment.route_id) {
+                    shipment.route = await this.routeService.find(shipment.route_id);
+                }
+            }
+            return data;
+        } catch (error) {
+            this.logger.error('[ShipmentService](findAll) Error finding all shipments', error);
             throw error;
         }
     }

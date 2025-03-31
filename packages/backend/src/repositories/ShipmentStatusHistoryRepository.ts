@@ -34,7 +34,7 @@ export class ShipmentStatusHistoryRepository {
         }
     }
 
-    async findByShipmentId(shipmentId: number): Promise<ShipmentStatusHistory[]> {
+    async findByShipmentId(shipmentId: string): Promise<ShipmentStatusHistory[]> {
         const query = `
       SELECT * FROM shipment_status_history
       WHERE shipment_id = ? AND deleted_at IS NULL

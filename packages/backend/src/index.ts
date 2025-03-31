@@ -7,7 +7,6 @@ import mysql from "mysql2/promise";
 import { UserRepository } from "./repositories/UserRepository";
 import { config } from "./config";
 import { UserService } from "./services/UserService";
-import { MailerService } from "./infrastructure/email/email";
 import { JwtService } from "./utils/Jwt";
 import { UserController } from "./api/v1/controllers/UserController";
 import { UserRoutes } from "./api/v1/routes/UserRoutes";
@@ -24,11 +23,18 @@ import { DriverService } from './services/DriverService';
 import { RouteService } from './services/RouteService';
 import { DriverRepository } from './repositories/DriverRepository';
 import { RouteRepository } from './repositories/RouteRepository';
+import { RouteController } from "./api/v1/controllers/RouteController";
+import { RouteRoutes } from "./api/v1/routes/RouteRoutes";
+import { DriverController } from "./api/v1/controllers/DriverController";
+import { DriverRoutes } from "./api/v1/routes/DriveRoutes";
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import { MailerService } from "./infrastructure/email/email";
 
 async function main() {
-  const logger = new Logger();
   try {
     dotenv.config();
+    const logger = new Logger();
 
     // Database
     const dbPool = mysql.createPool({
@@ -47,7 +53,7 @@ async function main() {
     // Redis
     const redisService = new RedisService(
       config.redis.host,
-     config.redis.port,
+      config.redis.port,
       config.redis.password,
       config.redis.db,
       config.redis.ttl
@@ -61,24 +67,35 @@ async function main() {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
+    // Swagger
+    const swaggerOptions = {
+      swaggerDefinition: {
+        openapi: '3.0.0',
+        info: {
+          title: 'Shipping API',
+          version: '1.0.0',
+          description: 'API documentation for the Shipping application',
+        },
+      },
+      apis: ['./src/api/v1/routes/*.ts', './src/domain/entities/*.ts', '../shared/src/**/*.ts'], // Path to the API docs
+    };
+    const swaggerDocs = swaggerJsdoc(swaggerOptions);
+    app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+    logger.log('info', "Swagger docs available at /api/v1/docs");
+
     // Socket
     const socketIOService = new SocketIOService(logger);
     const socketPort = config.socketPort;
     socketIOService.createServer(socketPort);
     logger.log('info', `Socket.IO server running on port: ${socketPort}`);
 
-    // Health Check
-    app.get("/ping", (_req, res) => {
-      console.log("ping");
-      res.send("pong");
-    });
 
     // Auth Middleware
     const jwtService = new JwtService();
     const authMiddleware = new AuthMiddleware(jwtService, logger);
 
     // General Services
-    const mailerService = new MailerService(logger);
+    const mailerService = new MailerService(logger);      
 
     // Initialize repositories
     const userRepository = new UserRepository(dbPool, logger);
@@ -98,7 +115,9 @@ async function main() {
       logger,
       userService,
       driverService,
-      routeService
+      routeService,
+      socketIOService,
+      redisService
     );
 
     // User
@@ -111,12 +130,21 @@ async function main() {
     const shipmentRoutes = new ShipmentRoutes(app, authMiddleware, shipmentController);
     shipmentRoutes.initializeRoutes();
 
+    //Route
+    const routeController = new RouteController(routeService, logger);
+    const routeRoutes = new RouteRoutes(app, authMiddleware, routeController);
+    routeRoutes.initializeRoutes();
+    //Driver
+    const driverController = new DriverController(driverService, logger);
+    const driverRoutes = new DriverRoutes(app, authMiddleware, driverController);
+    driverRoutes.initializeRoutes();
+
     const port = process.env.PORT || 8000;
     app.listen(port, () => {
       logger.log('info', "Server Run Port : " + port);
     });
   } catch (error) {
-    logger.error("Error starting server:", error);
+    console.error("Error starting the server:", error);
   }
 }
 

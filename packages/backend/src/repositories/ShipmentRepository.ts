@@ -3,10 +3,9 @@ import { Shipment } from '../domain/entities/Shipment';
 import { ShipmentStatus } from '@shipping/shared/dist/enums';
 import { Logger } from '../utils/Logger';
 
-
 export class ShipmentRepository {
     private db: mysql.Connection;
-    private logger: Logger
+    private logger: Logger;
 
     constructor(db: mysql.Connection, logger: Logger) {
         this.logger = logger;
@@ -15,10 +14,11 @@ export class ShipmentRepository {
 
     async create(shipment: Shipment): Promise<Shipment> {
         const query = `
-                INSERT INTO shipment (weight, dimensions, user_id, destination, status, product_type)
-                VALUES (?, ?, ?, ?, ?, ?)
-            `;
+            INSERT INTO shipment (id, weight, dimensions, user_id, destination, status, product_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
         const values = [
+            shipment.id,
             shipment.weight,
             shipment.dimensions,
             shipment.user_id,
@@ -28,21 +28,21 @@ export class ShipmentRepository {
         ];
         try {
             const [result] = await this.db.execute<mysql.ResultSetHeader>(query, values);
-            const insertedId = result.insertId;
+            const insertedId = result.insertId.toString();
             return { ...shipment, id: insertedId, status: shipment.status || ShipmentStatus.PENDING };
         } catch (error) {
-            this.logger.error('[RouteRepository](create) Error creating shipment:', error);
+            this.logger.error('[ShipmentRepository](create) Error creating shipment:', error);
             throw error;
         }
     }
 
-    async findById(id: number): Promise<Shipment | null> {
+    async findById(id: string): Promise<Shipment | null> {
         const query = 'SELECT * FROM shipment WHERE id = ? AND deleted_at IS NULL';
         try {
             const [rows] = await this.db.execute(query, [id]);
             return rows[0] as Shipment | null;
         } catch (error) {
-            this.logger.error('[RouteRepository](findById) Error finding shipment by ID:', error);
+            this.logger.error('[ShipmentRepository](findById) Error finding shipment by ID:', error);
             throw error;
         }
     }
@@ -53,53 +53,61 @@ export class ShipmentRepository {
             const [rows] = await this.db.execute(query, [userId]);
             return rows as Shipment[];
         } catch (error) {
-            this.logger.error('[RouteRepository](findByUserId) Error finding shipments by user ID:', error);
+            this.logger.error('[ShipmentRepository](findByUserId) Error finding shipments by user ID:', error);
             throw error;
         }
     }
 
-    async updateStatus(id: number, status: ShipmentStatus): Promise<void> {
+    async updateStatus(id: string, status: ShipmentStatus): Promise<void> {
         const query = 'UPDATE shipment SET status = ? WHERE id = ? AND deleted_at IS NULL';
         try {
             await this.db.execute(query, [status, id]);
         } catch (error) {
-            this.logger.error('[RouteRepository](updateStatus) Error updating shipment status:', error);
+            this.logger.error('[ShipmentRepository](updateStatus) Error updating shipment status:', error);
             throw error;
         }
     }
 
-    async assignDriverAndRoute(id: number, driverId: number, routeId: number): Promise<void> {
+    async assignDriverAndRoute(id: string, driverId: number, routeId: number): Promise<void> {
         const query = 'UPDATE shipment SET driver_id = ?, route_id = ? WHERE id = ? AND deleted_at IS NULL';
         try {
             await this.db.execute(query, [driverId, routeId, id]);
         } catch (error) {
-            this.logger.error('[RouteRepository](assignDriverAndRoute) Error assigning driver and route:', error);
+            this.logger.error('[ShipmentRepository](assignDriverAndRoute) Error assigning driver and route:', error);
             throw error;
         }
     }
 
-    async findWithAdvancedFilters(
-        filters: {
-            startDate?: Date;
-            endDate?: Date;
-            status?: ShipmentStatus;
-            driverId?: number;
-            page?: number;
-            limit?: number;
+    async findAll(): Promise<Shipment[]> {
+        const query = 'SELECT * FROM shipment WHERE deleted_at IS NULL';
+        try {
+            const [rows] = await this.db.execute(query);
+            return rows as Shipment[];
+        } catch (error) {
+            this.logger.error('[ShipmentRepository](findAll) Error finding all shipments:', error);
+            throw error;
         }
-    ): Promise<{ shipments: any[], total: number }> {
+    }
+
+    async findWithAdvancedFilters(filters: {
+        startDate?: Date;
+        endDate?: Date;
+        status?: ShipmentStatus;
+        driverId?: number;
+        page?: number;
+        limit?: number;
+    }): Promise<{ shipments: any[]; total: number }> {
         try {
             const { startDate, endDate, status, driverId, page = 1, limit = 10 } = filters;
             const offset = (page - 1) * limit;
+
             let query = `
                 SELECT s.*, 
                     u.name as customer_name, 
-                    d.name as driver_name,
                     r.name as route_name,
                     r.distance as route_distance
                 FROM shipment s
                 LEFT JOIN user u ON s.user_id = u.id
-                LEFT JOIN driver d ON s.driver_id = d.id
                 LEFT JOIN route r ON s.route_id = r.id
                 WHERE s.deleted_at IS NULL
             `;
@@ -142,93 +150,149 @@ export class ShipmentRepository {
 
             return { shipments: shipments as any[], total };
         } catch (error) {
-            this.logger.error('[RouteRepository](findWithAdvancedFilters) Error finding shipments with advanced filters:', error);
+            this.logger.error('[ShipmentRepository](findWithAdvancedFilters) Error finding shipments with advanced filters:', error);
             throw error;
         }
     }
 
-    async getPerformanceMetrics(
-        filters: {
-            startDate?: Date;
-            endDate?: Date;
-        }
-    ): Promise<any> {
-        try {
-            const { startDate, endDate } = filters;
-            const params = [];
+    async getFilteredShipments(filters: any) {
+        let sql = `SELECT * FROM shipment WHERE 1=1`;
+        const params: any[] = [];
 
-            let timeRangeCondition = '';
-            if (startDate && endDate) {
-                timeRangeCondition = 'WHERE s.created_at BETWEEN ? AND ? AND s.deleted_at IS NULL';
-                params.push(startDate, endDate);
-            } else if (startDate) {
-                timeRangeCondition = 'WHERE s.created_at >= ? AND s.deleted_at IS NULL';
-                params.push(startDate);
-            } else if (endDate) {
-                timeRangeCondition = 'WHERE s.created_at <= ? AND s.deleted_at IS NULL';
-                params.push(endDate);
-            } else {
-                timeRangeCondition = 'WHERE s.deleted_at IS NULL';
+        if (filters.startDate) {
+            sql += ` AND created_at >= ?`;
+            params.push(filters.startDate);
+        }
+
+        if (filters.endDate) {
+            sql += ` AND created_at <= ?`;
+            params.push(filters.endDate);
+        }
+
+        if (filters.status) {
+            sql += ` AND status = ?`;
+            params.push(filters.status);
+        }
+
+        if (filters.driverId) {
+            sql += ` AND driver_id = ?`;
+            params.push(filters.driverId);
+        }
+
+        const shipments = await this.db.query(sql, params);
+        const metrics = await this.getShipmentMetrics(filters);
+
+        return { shipments, metrics };
+    }
+
+    private async getShipmentMetrics(filters: any) {
+        try {
+            let sql = `
+                SELECT s.driver_id, 
+                       COUNT(*) AS totalShipments, 
+                       AVG(r.estimated_time) AS avgDeliveryTime
+                FROM shipment s
+                JOIN route r ON s.route_id = r.id
+                WHERE s.status = 'delivered'
+            `;
+            const params: any[] = [];
+
+            if (filters.startDate) {
+                sql += ` AND s.created_at >= ?`;
+                params.push(filters.startDate);
             }
 
-            const avgDeliveryTimeQuery = `
-                SELECT 
-                    d.id as driver_id, 
-                    d.name as driver_name,
-                    AVG(TIMESTAMPDIFF(HOUR, 
-                        (SELECT MIN(sh.changed_at) FROM shipment_status_history sh 
-                        WHERE sh.shipment_id = s.id AND sh.new_status = 'in_transit'),
-                        (SELECT MIN(sh.changed_at) FROM shipment_status_history sh 
-                        WHERE sh.shipment_id = s.id AND sh.new_status = 'delivered')
-                    )) as avg_delivery_hours,
-                    COUNT(s.id) as total_shipments,
-                    SUM(CASE WHEN s.status = 'delivered' THEN 1 ELSE 0 END) as completed_shipments,
-                    SUM(CASE WHEN s.status = 'in_transit' THEN 1 ELSE 0 END) as in_transit_shipments,
-                    SUM(CASE WHEN s.status = 'pending' THEN 1 ELSE 0 END) as pending_shipments
-                FROM shipment s
-                JOIN driver d ON s.driver_id = d.id
-                ${timeRangeCondition}
-                GROUP BY d.id, d.name
-            `;
+            if (filters.endDate) {
+                sql += ` AND s.created_at <= ?`;
+                params.push(filters.endDate);
+            }
 
-            const overallMetricsQuery = `
-                SELECT
-                    COUNT(id) as total_shipments,
-                    SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as completed_shipments,
-                    SUM(CASE WHEN status = 'in_transit' THEN 1 ELSE 0 END) as in_transit_shipments,
-                    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_shipments,
-                    AVG(CASE WHEN status = 'delivered' THEN 
-                        TIMESTAMPDIFF(HOUR, created_at, 
-                        (SELECT MIN(changed_at) FROM shipment_status_history 
-                        WHERE shipment_id = shipment.id AND new_status = 'delivered')
-                        )
-                        ELSE NULL END) as avg_delivery_time_hours
-                FROM shipment
-                ${timeRangeCondition}
-            `;
-            const monthlyTrendsQuery = `
-                SELECT 
-                    DATE_FORMAT(s.created_at, '%Y-%m') as month,
-                    COUNT(s.id) as total_shipments,
-                    SUM(CASE WHEN s.status = 'delivered' THEN 1 ELSE 0 END) as completed_shipments
-                FROM shipment s
-                ${timeRangeCondition}
-                GROUP BY DATE_FORMAT(s.created_at, '%Y-%m')
-                ORDER BY month
-            `;
+            sql += ` GROUP BY s.driver_id`;
 
-            const [driverPerformance] = await this.db.execute(avgDeliveryTimeQuery, params);
-            const [overallMetrics] = await this.db.execute(overallMetricsQuery, params);
-            const [monthlyTrends] = await this.db.execute(monthlyTrendsQuery, params);
-
-            return {
-                driverPerformance,
-                overallMetrics: overallMetrics[0],
-                monthlyTrends
-            };
+            const [rows] = await this.db.execute(sql, params); // Asegúrate de desestructurar los resultados
+            return rows; // Devuelve solo las filas
         } catch (error) {
-            this.logger.error('[RouteRepository](getPerformanceMetrics) Error getting performance metrics:', error);
-            throw error;
+            this.logger.error('[ShipmentRepository](getShipmentMetrics) Error executing metrics query:', error);
+            throw new Error('Error calculating shipment metrics');
+        }
+    }
+
+  
+
+    async getShipmentsCountAndGroupedByDate(filters: {
+        dateStart?: Date;
+        dateEnd?: Date;
+        status?: string;
+        driverId?: number;
+    }): Promise<{ total: number; groupedByDate: { date: string; total: number }[] }> {
+        try {
+            const conditions: string[] = [];
+            const params: any[] = [];
+
+            if (filters.dateStart && filters.dateEnd) {
+                conditions.push("(s.updated_at BETWEEN ? AND ?)");
+                params.push(filters.dateStart, filters.dateEnd);
+            }
+
+            if (filters.status) {
+                conditions.push("(s.status = ?)");
+                params.push(filters.status);
+            }
+
+            if (filters.driverId !== undefined && filters.driverId !== null) {
+                conditions.push("(s.driver_id = ?)");
+                params.push(filters.driverId);
+            }
+
+            const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+            // Consulta para contar el total de envíos
+            const totalCountSql = `
+                SELECT 
+                    COUNT(*) AS total
+                FROM 
+                    shipment s
+                LEFT JOIN 
+                    route r ON s.route_id = r.id
+                LEFT JOIN 
+                    driver d ON s.driver_id = d.id
+                LEFT JOIN 
+                    user u ON d.user_id = u.id
+                ${whereClause}
+            `;
+
+            const groupedByDateSql = `
+                SELECT 
+                    DATE(s.updated_at) AS date,
+                    COUNT(*) AS total
+                FROM 
+                    shipment s
+                LEFT JOIN 
+                    route r ON s.route_id = r.id
+                LEFT JOIN 
+                    driver d ON s.driver_id = d.id
+                LEFT JOIN 
+                    user u ON d.user_id = u.id
+                ${whereClause}
+                GROUP BY 
+                    DATE(s.updated_at)
+                ORDER BY 
+                    DATE(s.updated_at) ASC
+            `;
+
+            // Ejecutar ambas consultas en paralelo
+            const [totalResult, groupedByDateResult] = await Promise.all([
+                this.db.execute(totalCountSql, params),
+                this.db.execute(groupedByDateSql, params),
+            ]);
+
+            const total = totalResult[0]?.[0]?.total || 0;
+            const groupedByDate = groupedByDateResult[0] as { date: string; total: number }[];
+
+            return { total, groupedByDate };
+        } catch (error) {
+            this.logger.error('[ShipmentRepository](getShipmentsCountAndGroupedByDate) Error fetching shipments count and grouped by date:', error);
+            throw new Error('Error fetching shipments count and grouped by date');
         }
     }
 }

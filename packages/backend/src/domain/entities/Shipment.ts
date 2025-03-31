@@ -5,7 +5,7 @@ import { Route } from './Route';
 import { Driver } from './Driver';
 
 export class Shipment {
-    id?: number;
+    id?: string;
     weight: number;
     dimensions: string;
     user_id: number;

@@ -15,7 +15,7 @@ export class CreateShipmentStatusHistoryTable1711477200005 implements MigrationI
           },
           {
             name: "shipment_id",
-            type: "int",
+            type: "varchar", // Cambiado de varchar a int para referenciar shipment.id
             isNullable: false,
           },
           {
@@ -49,16 +49,18 @@ export class CreateShipmentStatusHistoryTable1711477200005 implements MigrationI
       })
     );
 
+    // Crear clave foránea para `shipment_id` apuntando a `shipment.id`
     await queryRunner.createForeignKey(
       "shipment_status_history",
       new TableForeignKey({
         columnNames: ["shipment_id"],
-        referencedColumnNames: ["id"],
+        referencedColumnNames: ["id"], // Apunta a shipment.id
         referencedTableName: "shipment",
         onDelete: "CASCADE",
       })
     );
 
+    // Crear clave foránea para `changed_by_user_id` apuntando a `user.id`
     await queryRunner.createForeignKey(
       "shipment_status_history",
       new TableForeignKey({
@@ -72,7 +74,7 @@ export class CreateShipmentStatusHistoryTable1711477200005 implements MigrationI
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const table = await queryRunner.getTable("shipment_status_history");
-    
+
     if (table) {
       const foreignKeys = table.foreignKeys;
       for (const foreignKey of foreignKeys) {

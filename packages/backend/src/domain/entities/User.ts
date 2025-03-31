@@ -2,7 +2,6 @@ import { UserRole } from '@shipping/shared/enums';
 import { Driver } from 'typeorm';
 
 export class User {
-
     id?: number;
     name: string;
     email: string;

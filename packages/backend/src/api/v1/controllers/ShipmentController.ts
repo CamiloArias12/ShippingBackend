@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ShipmentService } from '../../../services/ShipmentService';
 import { ShipmentCreateReq,ShipmentUpdateStatusReq,AssignShipmentReq } from '@shipping/shared/dist/shipment/index';
 import { Logger } from '../../../utils/Logger';
+import { ShipmentStatus, UserRole } from '@shipping/shared/dist/enums';
 
 
 export class ShipmentController {
@@ -15,7 +16,6 @@ export class ShipmentController {
 
     async create(req: Request, res: Response): Promise<void> {
 
-        
         const validation =ShipmentCreateReq.safeParse(req.body);
         if (!validation.success) {
           res.status(400).json({ error: 'Invalid data', validation });
@@ -37,6 +37,13 @@ export class ShipmentController {
     }
 
     async updateStatus(req: Request, res: Response): Promise<void> {
+        const user = req.user;
+
+        if (!user || user.role !== UserRole.ADMIN) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const validation = ShipmentUpdateStatusReq.safeParse(req.body);
         if (!validation.success) {
             res.status(400).json({ error: 'Invalid data', validation });
@@ -85,11 +92,11 @@ export class ShipmentController {
     async find(req: Request, res: Response): Promise<void> {
         const { id } = req.params;
         if (!id) {
-            res.status(400).json({ error: 'Invalid shipment ID' });
+            res.status(400).json({ error: 'Invalid shipment id' });
             return;
         }
         try {
-            const shipment = await this.shipmentService.find(Number(id));
+            const shipment = await this.shipmentService.find(id);
             if (!shipment) {
                 res.status(404).json({ error: 'Shipment not found' });
                 return;
@@ -101,15 +108,69 @@ export class ShipmentController {
         }
     }
 
+    async findAll(req: Request, res: Response): Promise<void> {
+        const { user } = req;
+
+        if (!user || user.role !== UserRole.ADMIN) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+        try {
+            const shipments = await this.shipmentService.findAll();
+            res.status(200).json(shipments);
+        } catch (error) {
+            this.logger.error('[ShipmentController](findAll) Error finding all shipments:', error);
+            res.status(500).json({ error: 'Failed to find shipments' });
+        }
+    }
+
     async getStatusHistory(req: Request, res: Response): Promise<void> {
         const { id } = req.params;
 
         try {
-            const history = await this.shipmentService.getStatusHistory(Number(id));
+            const history = await this.shipmentService.getStatusHistory(id);
             res.status(200).json(history);
         } catch (error) {
             this.logger.error('[ShipmentController](find) Error getting shipment status history:', error);
             res.status(500).json({ error: 'Failed to get status history' });
+        }
+    }
+
+    async findWithAdvancedFilters(req: Request, res: Response): Promise<void> {
+        try {
+            const filters = {
+                startDate: req.query.startDate ? new Date(req.query.startDate as string).toISOString() : undefined,
+                endDate: req.query.endDate ? new Date(req.query.endDate as string).toISOString() : undefined,
+                status: req.query.status as ShipmentStatus,
+                driverId: req.query.driverId ? parseInt(req.query.driverId as string, 10) : undefined,
+                page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,
+            };
+
+            const result = await this.shipmentService.getShipmentsWithAdvancedFilters(filters);
+            res.status(200).json(result);
+        } catch (error) {
+            this.logger.error('[ShipmentController](findWithAdvancedFilters) Error:', error);
+            res.status(500).json({ error: 'Failed to fetch shipments with advanced filters' });
+        }
+    }
+
+    async getShipmentsWithMetrics(req: Request, res: Response): Promise<void> {
+        try {
+            const filters = {
+                startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
+                endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
+                status: req.query.status as ShipmentStatus,
+                driverId: req.query.driverId ? parseInt(req.query.driverId as string, 10) : undefined,
+                page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,
+            };
+
+            const result = await this.shipmentService.getShipmentsWithMetrics(filters);
+            res.status(200).json(result);
+        } catch (error) {
+            this.logger.error('[ShipmentController](getShipmentsWithMetrics) Error:', error);
+            res.status(500).json({ error: 'Failed to fetch shipments with metrics' });
         }
     }
 }

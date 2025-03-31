@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { RouteService } from 'src/services/RouteService';
 import { Logger } from '../../../utils/Logger';
+import { UserRole } from '@shipping/shared/dist/enums';
 
 
 export class RouteController {
@@ -15,7 +16,7 @@ export class RouteController {
     async findAll(req: Request, res: Response): Promise<void> {
         try {
             const { user } = req;
-            if (!user) {
+            if (!user || user.role !== UserRole.ADMIN) {
                 res.status(403).json({ error: 'Unauthorized' });
                 return;
             }

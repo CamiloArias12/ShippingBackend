@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
 
-export class CreateRouteTable1711477200004 implements MigrationInterface {
+export class CreateShipmentTable1711477200004 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -8,10 +8,9 @@ export class CreateRouteTable1711477200004 implements MigrationInterface {
         columns: [
           {
             name: "id",
-            type: "int",
+            type: "varchar",
             isPrimary: true,
-            isGenerated: true,
-            generationStrategy: "increment",
+            length: "36",
           },
           {
             name: "weight",
@@ -47,22 +46,22 @@ export class CreateRouteTable1711477200004 implements MigrationInterface {
           {
             name: "route_id",
             type: "int",
-            isNullable: true
+            isNullable: true,
           },
           {
             name: "latitude",
             type: "float",
-            isNullable: true
+            isNullable: true,
           },
           {
             name: "longitude",
             type: "float",
-            isNullable: true
+            isNullable: true,
           },
           {
             name: "product_type",
             type: "varchar",
-            isNullable: true
+            isNullable: true,
           },
           {
             name: "created_at",
@@ -93,11 +92,12 @@ export class CreateRouteTable1711477200004 implements MigrationInterface {
         onDelete: "CASCADE",
       })
     );
+
     await queryRunner.createForeignKey("shipment", new TableForeignKey({
       columnNames: ["route_id"],
       referencedColumnNames: ["id"],
       referencedTableName: "route",
-      onDelete: "CASCADE"
+      onDelete: "CASCADE",
     }));
 
     await queryRunner.createForeignKey(
@@ -112,22 +112,22 @@ export class CreateRouteTable1711477200004 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    const table = await queryRunner.getTable("route");
+    const table = await queryRunner.getTable("shipment");
 
     const userForeignKey = table?.foreignKeys.find(
       (fk) => fk.columnNames.indexOf("user_id") !== -1
     );
     if (userForeignKey) {
-      await queryRunner.dropForeignKey("route", userForeignKey);
+      await queryRunner.dropForeignKey("shipment", userForeignKey);
     }
 
     const driverForeignKey = table?.foreignKeys.find(
       (fk) => fk.columnNames.indexOf("driver_id") !== -1
     );
     if (driverForeignKey) {
-      await queryRunner.dropForeignKey("route", driverForeignKey);
+      await queryRunner.dropForeignKey("shipment", driverForeignKey);
     }
 
-    await queryRunner.dropTable("route");
+    await queryRunner.dropTable("shipment");
   }
 }
