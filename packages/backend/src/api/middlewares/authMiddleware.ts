@@ -12,11 +12,12 @@ declare global {
 
 export class AuthMiddleware {
   private jwtService: JwtService;
-  private looger: Logger;
+  private logger: Logger;
 
   constructor(jwtService: JwtService, logger: Logger) {
     this.jwtService = jwtService;
-    this.looger = logger;
+    this.logger = logger;
+    this.authenticate = this.authenticate.bind(this);
   }
 
   public async authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -35,12 +36,12 @@ export class AuthMiddleware {
         req.user = decoded;
         next();
       } catch (error) {
-        this.looger.error('Invalid token:', error);
+        this.logger.error('[AuthMiddleware](authenticate): Invalid token:', error);
         res.status(401).json({ error: 'Invalid or expired token' });
       }
     } catch (error) {
-      this.looger.error('[AuthMiddleware](authenticate) Error in authentication middleware:', error);
+      this.logger.error('[AuthMiddleware](authenticate): Error in authentication middleware:', error);
       res.status(500).json({ error: 'Authentication failed' });
     }
-  };
+  }
 }

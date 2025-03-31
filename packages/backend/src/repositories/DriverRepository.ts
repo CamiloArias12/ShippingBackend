@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import { Driver } from '../domain/entities/Driver';
-import { DriverStatus } from '@shipping/shared/enums';
 import { Logger } from '../utils/Logger';
+import { DriverStatus } from '@shipping/shared/dist/enums';
 
 export class DriverRepository {
     private db: mysql.Connection;

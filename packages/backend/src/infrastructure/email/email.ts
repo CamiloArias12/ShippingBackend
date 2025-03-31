@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { config } from '../../config';
 import { Logger } from '../../utils/Logger';
+import { console } from 'inspector';
 
 export type SMTPConfig = {
     host: string;
@@ -34,8 +35,7 @@ export class MailerService {
             const config = this.smtpConfigs[configKey || 'default'];
             if (!config) {
                 throw new Error(`SMTP configuration "${configKey}" not found.`);
-            }
-    
+            } 
             return nodemailer.createTransport({
                 host: config.host,
                 port: config.port,
@@ -61,6 +61,7 @@ export class MailerService {
     ) {
         try {
             const transporter = this.createTransporter("default");
+
             await transporter.sendMail({
                 to: to,
                 subject: subject,
@@ -99,12 +100,19 @@ export class MailerService {
 
     }
 
-    public async sendWelcomeEmail(to: string, name: string) {
-        try {
+     async sendWelcomeEmail(to: string, name: string) {
+        
             const html = this.getTemplate('welcome', { name: name });
             await this.sendMail(to, 'Bienvenido a Coordinadora', html, null)
+        
+    }
+
+     async sendShippingEmail(to: string, name: string, id: string) {
+        try {
+            const html = this.getTemplate('shipment', { name: name, id: id });
+            await this.sendMail(to, 'Tu envio ha sido creado', html, null)
         } catch (e) {
-            this.logger.error(`[MailerService](sendWelcomeEmail): Error sending welcome email`, e);
+            this.logger.error(`[MailerService](sendShippingEmail): Error sending shipping email`, e);
             console.error(e);
         }
     }

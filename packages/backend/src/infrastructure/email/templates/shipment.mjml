@@ -4,7 +4,7 @@
     <mj-section>
       <mj-column>
         <mj-text>Hola {{name}}</mj-text>
-        <mj-text>Tines un nuevo envio con guia No {{uuid}}  </mj-text>
+        <mj-text>Tines un nuevo envio con guia No {{id}}  </mj-text>
       </mj-column>
     </mj-section>
     <mj-include path="./footer.mjml" />

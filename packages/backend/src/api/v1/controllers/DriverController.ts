@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import { DriverService } from 'src/services/DriverService';
 import { Logger } from '../../../utils/Logger';
+import { User } from 'src/domain/entities/User';
+import { UserRole } from '@shipping/shared/dist/enums';
 
 
-export class UserController {
+export class DriverController {
     private driverService: DriverService;
     private logger:Logger
 
@@ -15,7 +17,7 @@ export class UserController {
     async findAll(req: Request, res: Response): Promise<void> {
         try {
             const { user } = req;
-            if (!user) {
+            if (!user || user.role !== UserRole.ADMIN) {
                 res.status(403).json({ error: 'Unauthorized' });
                 return;
             }

@@ -12,14 +12,14 @@ export class UserService {
     private mailerService: MailerService
     private logger: Logger;
 
-    constructor(jwtService: JwtService, userRepository: UserRepository, mailerService: MailerService,logger: Logger) {
+    constructor(jwtService: JwtService, userRepository: UserRepository, mailerService: MailerService, logger: Logger) {
         this.logger = logger;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.mailerService = mailerService;
     }
 
-    async create(user: UserCreateDto): Promise<{ token: string } | null> {
+    async create(user: UserCreateDto): Promise<User | null> {
         try {
             const hashedPassword = await bcrypt.hash(user.password, 10);
             const result: User = await this.userRepository.create({
@@ -28,9 +28,9 @@ export class UserService {
                 created_at: new Date(),
             });
             if (!result) return null;
-            
+
             this.mailerService.sendWelcomeEmail(user.email, user.name);
-            return await this.login(user.email, user.password);
+            return user;
         } catch (error) {
             this.logger.error('[UserService](create) Error in create user', error);
             throw error;
