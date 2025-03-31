@@ -3,7 +3,7 @@
 
 shipping  is structure by the following packages.
 
-- `backen`: The back-end application used to provide shipping Web Services.
+- `backend`: The back-end application used to provide shipping Web Services.
 - `shared`: The shared package is used to represent common code between packages.
 
 ## Requirements
