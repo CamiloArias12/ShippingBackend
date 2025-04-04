@@ -24,7 +24,7 @@ To start the project, you should use docker compose using local or production da
 
 To start the project using Docker Compose with a local database, execute the following code:
 
-`docker compose -f compose-dev.yml up`
+`docker compose -f compose.dev.yml up`
 
 Note: Remember put the database configuration into '.env' file.
 
